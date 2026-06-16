@@ -9,3 +9,4 @@ coverage/
 *.tsbuildinfo
 .work/
 .playwright-mcp/
+__pycache__/
