@@ -2,11 +2,11 @@ import type { Concept, SessionState } from "../../shared/types";
 import { cx } from "../util";
 
 const STATUS_STYLE: Record<Concept["status"], { ring: string; dot: string; label: string }> = {
-  pending: { ring: "border-white/10", dot: "bg-white/25", label: "queued" },
-  teaching: { ring: "border-tutor/50", dot: "bg-tutor", label: "teaching" },
-  assessing: { ring: "border-assessor/50", dot: "bg-assessor", label: "assessing" },
-  remediating: { ring: "border-diagnostician/50", dot: "bg-diagnostician", label: "remediating" },
-  mastered: { ring: "border-tutor/40", dot: "bg-tutor", label: "mastered" },
+  pending: { ring: "border-slate-200", dot: "bg-slate-300", label: "up next" },
+  teaching: { ring: "border-tutor/40", dot: "bg-tutor", label: "learning" },
+  assessing: { ring: "border-assessor/40", dot: "bg-assessor", label: "exercise" },
+  remediating: { ring: "border-diagnostician/40", dot: "bg-diagnostician", label: "reviewing" },
+  mastered: { ring: "border-tutor/40", dot: "bg-tutor", label: "done" },
 };
 
 export default function ConceptTrack({ session }: { session: SessionState }) {
@@ -18,17 +18,17 @@ export default function ConceptTrack({ session }: { session: SessionState }) {
     <div className="panel panel-pad">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="label">Learning plan</span>
-          <span className="text-xs text-white/40">{session.plan?.goal}</span>
+          <span className="label">Your path</span>
+          <span className="text-xs text-slate-500">{session.plan?.goal}</span>
         </div>
-        <span className="text-xs font-semibold text-white/60">
-          {mastered}/{concepts.length} mastered
+        <span className="text-xs font-semibold text-slate-600">
+          {mastered}/{concepts.length} done
         </span>
       </div>
 
-      <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-planner to-tutor transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r from-brand-600 to-tutor transition-all duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -41,30 +41,25 @@ export default function ConceptTrack({ session }: { session: SessionState }) {
             <div
               key={c.id}
               className={cx(
-                "min-w-[150px] shrink-0 rounded-xl border bg-ink-900/50 p-3 transition",
+                "min-w-[150px] shrink-0 rounded-lg border bg-white p-3 transition",
                 s.ring,
-                active && "ring-2 ring-planner/60",
-                c.status === "mastered" && "opacity-90",
+                active && "ring-2 ring-brand-300",
               )}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-white/30">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
+                <span className="text-[10px] font-bold text-slate-300">{String(i + 1).padStart(2, "0")}</span>
                 {c.injected ? (
-                  <span className="chip bg-diagnostician/20 text-diagnostician !px-1.5 !py-0.5 text-[9px]">
-                    auto-added
+                  <span className="chip bg-diagnostician/10 text-diagnostician !px-1.5 !py-0.5 text-[9px]">
+                    added for you
                   </span>
                 ) : (
-                  <span className="text-[9px] uppercase tracking-wide text-white/30">{c.difficulty}</span>
+                  <span className="text-[9px] uppercase tracking-wide text-slate-400">{c.difficulty}</span>
                 )}
               </div>
-              <div className="mt-1 text-sm font-semibold leading-tight">{c.title}</div>
+              <div className="mt-1 text-sm font-semibold leading-tight text-slate-800">{c.title}</div>
               <div className="mt-2 flex items-center gap-1.5">
                 <span className={cx("h-1.5 w-1.5 rounded-full", s.dot, active && "animate-pulse-soft")} />
-                <span className="text-[10px] text-white/45">
-                  {c.status === "mastered" ? "✓ mastered" : s.label}
-                </span>
+                <span className="text-[10px] text-slate-500">{c.status === "mastered" ? "✓ done" : s.label}</span>
               </div>
             </div>
           );

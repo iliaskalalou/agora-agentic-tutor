@@ -1,7 +1,7 @@
 import type { AgentKind } from "../shared/types";
 
-// Presentation metadata for each agent: its color (matches tailwind.config),
-// glyph and one-line role. Drives the roster, badges and activity stream.
+// Presentation metadata for each agent. Used only in the optional advanced
+// ("coach") view; the default student experience hides agent internals.
 export interface AgentMeta {
   kind: AgentKind;
   name: string;
@@ -11,48 +11,12 @@ export interface AgentMeta {
 }
 
 export const AGENT_META: Record<AgentKind, AgentMeta> = {
-  orchestrator: {
-    kind: "orchestrator",
-    name: "Orchestrator",
-    glyph: "◎",
-    role: "Decides the next move",
-    hex: "#c084fc",
-  },
-  planner: {
-    kind: "planner",
-    name: "Planner",
-    glyph: "✦",
-    role: "Designs the learning path",
-    hex: "#7c83ff",
-  },
-  tutor: {
-    kind: "tutor",
-    name: "Tutor",
-    glyph: "❂",
-    role: "Teaches each concept",
-    hex: "#3ecf8e",
-  },
-  assessor: {
-    kind: "assessor",
-    name: "Assessor",
-    glyph: "◈",
-    role: "Checks understanding",
-    hex: "#ffb020",
-  },
-  diagnostician: {
-    kind: "diagnostician",
-    name: "Diagnostician",
-    glyph: "⚕",
-    role: "Finds gaps, triggers remediation",
-    hex: "#ff5d73",
-  },
-  learner: {
-    kind: "learner",
-    name: "Learner",
-    glyph: "◍",
-    role: "Answers and progresses",
-    hex: "#22d3ee",
-  },
+  orchestrator: { kind: "orchestrator", name: "Orchestrator", glyph: "O", role: "Decides the next move", hex: "#7c3aed" },
+  planner: { kind: "planner", name: "Planner", glyph: "P", role: "Designs the learning path", hex: "#4f46e5" },
+  tutor: { kind: "tutor", name: "Tutor", glyph: "T", role: "Teaches each concept", hex: "#059669" },
+  assessor: { kind: "assessor", name: "Assessor", glyph: "A", role: "Checks understanding", hex: "#d97706" },
+  diagnostician: { kind: "diagnostician", name: "Diagnostician", glyph: "D", role: "Finds gaps, corrects", hex: "#e11d48" },
+  learner: { kind: "learner", name: "Learner", glyph: "L", role: "Answers and progresses", hex: "#0284c7" },
 };
 
 export const AGENT_ORDER: AgentKind[] = [

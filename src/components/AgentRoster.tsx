@@ -13,9 +13,9 @@ export default function AgentRoster({
   return (
     <div className="panel panel-pad">
       <div className="mb-3 flex items-center justify-between">
-        <span className="label">Agent crew</span>
-        <span className={cx("chip text-[10px]", live ? "bg-tutor/15 text-tutor" : "bg-white/5 text-white/40")}>
-          <span className={cx("h-1.5 w-1.5 rounded-full", live ? "bg-tutor animate-pulse-soft" : "bg-white/30")} />
+        <span className="label">AI agents</span>
+        <span className={cx("chip text-[10px]", live ? "bg-tutor/10 text-tutor" : "bg-slate-100 text-slate-400")}>
+          <span className={cx("h-1.5 w-1.5 rounded-full", live ? "bg-tutor animate-pulse-soft" : "bg-slate-300")} />
           {live ? "active" : status}
         </span>
       </div>
@@ -27,27 +27,25 @@ export default function AgentRoster({
             <div
               key={kind}
               className={cx(
-                "flex items-center gap-3 rounded-xl border px-3 py-2 transition",
-                isActive ? "border-white/20 bg-white/10" : "border-white/5 bg-white/[0.02]",
+                "flex items-center gap-3 rounded-lg border px-3 py-2 transition",
+                isActive ? "border-slate-300 bg-slate-50" : "border-slate-100 bg-white",
               )}
             >
               <div
-                className={cx("grid h-8 w-8 place-items-center rounded-lg text-base", isActive && "animate-pulse-soft")}
-                style={{
-                  color: m.hex,
-                  background: `${m.hex}1a`,
-                  border: `1px solid ${m.hex}55`,
-                }}
+                className={cx(
+                  "grid h-8 w-8 place-items-center rounded-lg text-xs font-bold",
+                  isActive && "animate-pulse-soft",
+                )}
+                style={{ color: m.hex, background: `${m.hex}14`, border: `1px solid ${m.hex}40` }}
               >
                 {m.glyph}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold" style={{ color: isActive ? m.hex : undefined }}>
+                <div className="text-sm font-semibold text-slate-800" style={{ color: isActive ? m.hex : undefined }}>
                   {m.name}
                 </div>
-                <div className="truncate text-[11px] text-white/40">{m.role}</div>
+                <div className="truncate text-[11px] text-slate-400">{m.role}</div>
               </div>
-              {isActive && <span className="text-[10px] font-semibold" style={{ color: m.hex }}>●</span>}
             </div>
           );
         })}

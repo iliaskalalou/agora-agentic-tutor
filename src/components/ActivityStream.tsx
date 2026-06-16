@@ -13,7 +13,7 @@ const detailClampStyle: CSSProperties = {
 
 export default function ActivityStream({ events }: { events: AgentEvent[] }) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const shownEvents = events.filter((event) => event.type !== "snapshot").sort((a, b) => a.ts - b.ts);
+  const shownEvents = events.filter((event) => event.type !== "snapshot");
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
@@ -23,7 +23,7 @@ export default function ActivityStream({ events }: { events: AgentEvent[] }) {
     <div className="panel panel-pad">
       <div className="mb-3 flex items-center justify-between">
         <span className="label">Agent activity</span>
-        <span className="chip bg-white/5 text-[10px] text-white/45">{shownEvents.length} shown</span>
+        <span className="chip bg-slate-100 text-[10px] text-slate-500">{shownEvents.length}</span>
       </div>
 
       <div className="scroll-thin max-h-[60vh] space-y-2 overflow-y-auto pr-1">
@@ -35,39 +35,33 @@ export default function ActivityStream({ events }: { events: AgentEvent[] }) {
             <div
               key={event.id}
               className={cx(
-                "animate-slide-in flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.025] px-3 py-2.5 transition",
-                highlighted && "ring-1 ring-white/10",
+                "animate-slide-in flex items-start gap-3 rounded-lg border px-3 py-2.5 transition",
+                highlighted ? "border-slate-300" : "border-slate-100",
               )}
-              style={{
-                background: highlighted ? `${meta.hex}0f` : undefined,
-              }}
+              style={{ background: highlighted ? `${meta.hex}0d` : "white" }}
             >
               <div
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-base"
-                style={{
-                  color: meta.hex,
-                  background: `${meta.hex}1a`,
-                  border: `1px solid ${meta.hex}55`,
-                }}
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-[11px] font-bold"
+                style={{ color: meta.hex, background: `${meta.hex}14`, border: `1px solid ${meta.hex}33` }}
               >
                 {meta.glyph}
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                  <span className="text-sm font-semibold" style={{ color: meta.hex }}>
+                  <span className="text-xs font-semibold" style={{ color: meta.hex }}>
                     {meta.name}
                   </span>
-                  <span className="min-w-0 text-sm font-medium leading-snug text-white">{event.title}</span>
+                  <span className="min-w-0 text-sm font-medium leading-snug text-slate-800">{event.title}</span>
                 </div>
                 {event.detail && (
-                  <div className="mt-1 text-xs leading-relaxed text-white/50" style={detailClampStyle}>
+                  <div className="mt-1 text-xs leading-relaxed text-slate-500" style={detailClampStyle}>
                     {event.detail}
                   </div>
                 )}
               </div>
 
-              <div className="shrink-0 pt-0.5 text-[11px] font-medium text-white/30">{ago(event.ts)}</div>
+              <div className="shrink-0 pt-0.5 text-[11px] font-medium text-slate-300">{ago(event.ts)}</div>
             </div>
           );
         })}

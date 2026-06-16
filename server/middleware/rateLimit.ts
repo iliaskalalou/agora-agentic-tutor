@@ -12,6 +12,11 @@ export function rateLimit(opts: { windowMs: number; max: number }) {
   const buckets = new Map<string, Bucket>();
 
   return (req: Request, res: Response, next: NextFunction) => {
+    // Only throttle writes (which spawn autonomous compute or OCR). Reads —
+    // including the client polling GET /api/sessions/:id — pass through freely.
+    if (req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") {
+      return next();
+    }
     const now = Date.now();
     const key = req.ip ?? "global";
 

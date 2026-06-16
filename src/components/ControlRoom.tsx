@@ -7,12 +7,15 @@ import TutorPanel from "./TutorPanel";
 import AssessmentPanel from "./AssessmentPanel";
 import ActivityStream from "./ActivityStream";
 import SummaryCard from "./SummaryCard";
+import DocumentReview from "./DocumentReview";
+import { cx } from "../util";
 
 export default function ControlRoom({
   session,
   events,
   lesson,
   submitting,
+  advanced,
   onAnswer,
   onRestart,
 }: {
@@ -20,6 +23,7 @@ export default function ControlRoom({
   events: AgentEvent[];
   lesson: Lesson | null;
   submitting: boolean;
+  advanced: boolean;
   onAnswer: (questionId: string, answer: number | string) => void;
   onRestart: () => void;
 }) {
@@ -37,20 +41,24 @@ export default function ControlRoom({
       <ConceptTrack session={session} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <div className="space-y-4 lg:col-span-3">
-          <AgentRoster activeAgent={activeAgent} status={session.status} />
+        <div className={cx("space-y-4", advanced ? "lg:col-span-3" : "lg:col-span-4")}>
+          {advanced && <AgentRoster activeAgent={activeAgent} status={session.status} />}
           <MetricsPanel session={session} />
+          {!advanced && <DocumentReview sessionId={session.id} />}
         </div>
 
-        <div className="space-y-4 lg:col-span-5">
+        <div className={cx("space-y-4", advanced ? "lg:col-span-5" : "lg:col-span-8")}>
           {completed && <SummaryCard summary={session.summary!} onRestart={onRestart} />}
           <TutorPanel lesson={lesson} />
           {!completed && <AssessmentPanel session={session} submitting={submitting} onAnswer={onAnswer} />}
+          {advanced && <DocumentReview sessionId={session.id} />}
         </div>
 
-        <div className="lg:col-span-4">
-          <ActivityStream events={events} />
-        </div>
+        {advanced && (
+          <div className="lg:col-span-4">
+            <ActivityStream events={events} />
+          </div>
+        )}
       </div>
     </div>
   );

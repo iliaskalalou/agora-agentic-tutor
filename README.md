@@ -36,11 +36,28 @@ Nobody told it to — it's a decision the system makes from the learner's state.
 | **Diagnostician** | Grades, names the misconception, finds the gap | Causal reasoning |
 | **Learner** | (Autopilot) a simulated student that closes the loop | Full hands-off operation |
 
-In **autopilot** mode the simulated Learner answers the quizzes, so the *entire* session —
-plan → teach → assess → diagnose → remediate → complete — runs end-to-end with **zero human
-input**. In **interactive** mode, a human answers and everything else stays autonomous.
+**Practice mode (the default)** is the real product: a student picks a subject, works through
+exercises, gets instant correction, and follows their progress — while the agents autonomously
+plan, teach, diagnose and re-plan around them. **Autopilot mode** is a hands-off demo: a simulated
+Learner answers the quizzes so the *entire* loop runs end-to-end with zero human input — useful for
+showing the autonomy on stage. The autonomy lives in the teaching system, not in doing the work for
+the student.
 
-![Control room mid-run](docs/screenshots/02-control-room-running.png)
+The default learner experience is clean and distraction-free; a **Coach view** toggle reveals the
+agents and their live activity for anyone who wants to see the machinery.
+
+What a learner gets:
+
+- **Many subjects** — recursion, fractions, percentages, algebra, grammar, geography, chemistry,
+  photosynthesis, the French Revolution, and any free-text goal (80+ built-in exercises).
+- **Instant, specific correction** — the Diagnostician names the exact misconception, not just
+  "wrong".
+- **Adaptive path** — miss a prerequisite and the system inserts a remedial lesson before moving on.
+- **Correct my work (OCR)** — upload a photo of handwritten or printed work; Agora reads it with
+  on-device OCR (Tesseract) and gives targeted feedback on the concept in focus.
+- **Progress tracking** — per-concept mastery, accuracy, and a session summary.
+
+![Student practice view](docs/screenshots/02-student-view.png)
 
 ---
 
@@ -61,7 +78,7 @@ input**. In **interactive** mode, a human answers and everything else stays auto
   real browser, and **demo-safe**: with no API key it runs a flawless deterministic simulation,
   so the demo never depends on the network.
 
-![Run complete](docs/screenshots/03-run-complete.png)
+![Coach view — the agents revealed](docs/screenshots/03-coach-view.png)
 
 ---
 
@@ -131,8 +148,9 @@ npm run smoke        # drives a full run against a live server and checks the ou
 
 This project was verified at every layer:
 
-- **11 unit + integration tests** — curriculum routing, deterministic learner, grading, and a
-  full autopilot run asserting all concepts mastered + ≥1 emergent remediation + no answer-key
+- **17 unit + integration tests** — curriculum routing across all subjects, the deterministic
+  learner, grading, the expanded exercise bank, the OCR document reviewer, a rate-limit regression,
+  and a full autopilot run asserting all concepts mastered + ≥1 emergent remediation + no answer-key
   leakage.
 - **Smoke tested** against a live production server in both **in-memory** and **real Redis**
   backends (Redis keys verified written).

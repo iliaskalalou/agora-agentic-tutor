@@ -227,3 +227,21 @@ export interface AggregateStats {
   lessonsDelivered: number;
   remediationsInjected: number;
 }
+
+// ---------------------------------------------------------------------------
+// Document review: a learner uploads a photo of their work, OCR extracts the
+// text, and a reviewer agent corrects it against the current concept.
+// ---------------------------------------------------------------------------
+
+export interface DocumentReview {
+  extractedText: string;
+  verdict: string;
+  strengths: string[];
+  corrections: string[];
+  conceptTitle?: string;
+  ocrOk: boolean;
+}
+
+export interface UploadResponse {
+  review: DocumentReview;
+}

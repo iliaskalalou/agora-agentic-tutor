@@ -4,6 +4,7 @@ import type {
   CreateSessionRequest,
   GoalPreset,
   SessionState,
+  UploadResponse,
 } from "../shared/types";
 
 export interface RuntimeInfo {
@@ -40,6 +41,16 @@ export const api = {
     jpost<{ session: SessionState }>("/api/sessions", body),
   answer: (id: string, questionId: string, answer: number | string) =>
     jpost<{ ok: boolean }>(`/api/sessions/${id}/answer`, { questionId, answer }),
+  uploadDocument: async (id: string, file: File): Promise<UploadResponse> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`/api/sessions/${id}/document`, { method: "POST", body: form });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(detail.error ?? `upload failed (${res.status})`);
+    }
+    return res.json() as Promise<UploadResponse>;
+  },
 };
 
 // Subscribe to a session's live agent event stream. Returns an unsubscribe fn.

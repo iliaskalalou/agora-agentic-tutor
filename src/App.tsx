@@ -22,6 +22,8 @@ export default function App() {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [starting, setStarting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // Default to the clean student view; "Coach view" reveals the AI agents.
+  const [advanced, setAdvanced] = useState(false);
 
   const refreshStats = useCallback(() => {
     api.stats().then((r) => setStats(r.stats)).catch(() => undefined);
@@ -90,13 +92,20 @@ export default function App() {
 
   return (
     <div className="min-h-full">
-      <Header info={info} session={session} onRestart={session ? handleRestart : undefined} />
+      <Header
+        info={info}
+        session={session}
+        advanced={advanced}
+        onToggleAdvanced={() => setAdvanced((v) => !v)}
+        onRestart={session ? handleRestart : undefined}
+      />
       {session ? (
         <ControlRoom
           session={session}
           events={events}
           lesson={lesson}
           submitting={submitting}
+          advanced={advanced}
           onAnswer={handleAnswer}
           onRestart={handleRestart}
         />

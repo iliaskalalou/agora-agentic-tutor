@@ -1,4 +1,5 @@
 import type { Difficulty } from "../../shared/types";
+import { EXTRA_TOPICS } from "./exercises_extra";
 
 // ---------------------------------------------------------------------------
 // Deterministic pedagogical knowledge base. This powers Agora's simulation mode
@@ -510,7 +511,13 @@ const frenchRevolution: KBTopic = {
   ],
 };
 
-export const TOPICS: KBTopic[] = [recursion, fractions, photosynthesis, frenchRevolution];
+export const TOPICS: KBTopic[] = [
+  recursion,
+  fractions,
+  photosynthesis,
+  frenchRevolution,
+  ...EXTRA_TOPICS,
+];
 
 // --------------------------- Generic goal builder ---------------------------
 
