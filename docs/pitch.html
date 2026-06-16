@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agora — Pitch</title>
+    <style>
+      :root {
+        --planner: #7c83ff;
+        --tutor: #3ecf8e;
+        --assessor: #ffb020;
+        --diagnostician: #ff5d73;
+        --learner: #22d3ee;
+        --orchestrator: #c084fc;
+        --ink: #0a0e1a;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+      body {
+        font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+        background:
+          radial-gradient(1200px 600px at 12% -10%, rgba(124, 131, 255, 0.18), transparent 60%),
+          radial-gradient(1000px 500px at 100% 0%, rgba(62, 207, 142, 0.12), transparent 55%),
+          var(--ink);
+        color: #e6e9f2;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+      .deck { height: 100vh; width: 100vw; position: relative; }
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        padding: 6vh 9vw;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+      }
+      .slide.active { display: flex; opacity: 1; }
+      .kicker {
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.45);
+        margin-bottom: 18px;
+      }
+      h1 { font-size: clamp(34px, 6vw, 76px); font-weight: 800; line-height: 1.02; letter-spacing: -0.02em; }
+      h2 { font-size: clamp(26px, 4.2vw, 50px); font-weight: 800; line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 18px; }
+      .grad {
+        background: linear-gradient(90deg, var(--planner), var(--learner), var(--tutor));
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+      }
+      p.lead { font-size: clamp(17px, 2.1vw, 24px); color: rgba(230, 233, 242, 0.72); max-width: 60ch; line-height: 1.5; margin-top: 10px; }
+      ul { list-style: none; margin-top: 18px; display: grid; gap: 12px; }
+      li { font-size: clamp(15px, 1.8vw, 21px); color: rgba(230, 233, 242, 0.82); display: flex; gap: 12px; align-items: flex-start; }
+      li .b { color: var(--tutor); font-weight: 800; }
+      .agentgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+      .agent { border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px; background: rgba(255,255,255,0.03); }
+      .agent .g { font-size: 26px; }
+      .agent .n { font-weight: 700; margin-top: 8px; font-size: 18px; }
+      .agent .r { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+      .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 26px; font-weight: 700; }
+      .pill { padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); font-size: clamp(13px,1.6vw,18px); }
+      .pill.hot { border-color: var(--diagnostician); color: var(--diagnostician); background: rgba(255,93,115,0.12); }
+      .arrow { color: rgba(255,255,255,0.4); }
+      .two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 24px; }
+      .card { border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 22px; background: rgba(255,255,255,0.03); }
+      .card h3 { font-size: 18px; margin-bottom: 10px; }
+      .card p, .card li { font-size: 15px; color: rgba(230,233,242,0.72); }
+      .stat { font-size: clamp(30px,5vw,60px); font-weight: 800; }
+      .crit { display:grid; grid-template-columns: repeat(5,1fr); gap:14px; margin-top:26px; }
+      .crit div { border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:16px; background:rgba(255,255,255,0.03); }
+      .crit .t { font-weight:800; font-size:15px; }
+      .crit .d { font-size:12px; color:rgba(255,255,255,0.5); margin-top:6px; }
+      .logo { display:flex; align-items:center; gap:14px; margin-bottom: 26px; }
+      .logo .mark { width:54px; height:54px; border-radius:14px; display:grid; place-items:center; font-size:26px; background: linear-gradient(135deg, var(--planner), var(--orchestrator)); box-shadow: 0 8px 30px rgba(124,131,255,0.4); }
+      footer { position: absolute; bottom: 3vh; left: 9vw; right: 9vw; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: rgba(255,255,255,0.35); }
+      .dots { display: flex; gap: 8px; }
+      .dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.2); cursor: pointer; }
+      .dot.on { background: var(--planner); width: 22px; }
+      .hint { color: rgba(255,255,255,0.3); }
+      @media (max-width: 720px) { .agentgrid, .crit { grid-template-columns: 1fr 1fr; } .two { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="deck" id="deck">
+      <!-- 1 -->
+      <section class="slide active">
+        <div class="logo">
+          <div class="mark">🏛️</div>
+          <div>
+            <div style="font-size: 22px; font-weight: 800;">Agora</div>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.5);">The self-driving classroom</div>
+          </div>
+        </div>
+        <h1>Autonomous AI agents that <span class="grad">teach a goal end-to-end.</span></h1>
+        <p class="lead">A multi-agent tutoring system for the Agentic AI in Education hackathon. Give it a learning goal; six agents plan, teach, diagnose, and adapt — with little to no human intervention.</p>
+      </section>
+
+      <!-- 2 -->
+      <section class="slide">
+        <div class="kicker">The problem</div>
+        <h2>The best teaching method doesn't scale.</h2>
+        <p class="lead">One-to-one tutoring produces a two-standard-deviation improvement (Bloom, 1984). It is the most effective intervention we have in education — and the least scalable. There will never be enough expert tutors.</p>
+        <div class="flow"><span class="stat grad">+2σ</span><span class="pill">one-to-one tutoring</span><span class="arrow">vs</span><span class="pill">one teacher, thirty students</span></div>
+      </section>
+
+      <!-- 3 -->
+      <section class="slide">
+        <div class="kicker">The insight</div>
+        <h2>Tutoring is a <span class="grad">loop</span>, not a Q&amp;A.</h2>
+        <p class="lead">Most "AI tutors" just answer questions. A real tutor plans what to teach, notices confusion, diagnoses the underlying gap, and changes the plan to fix it.</p>
+        <div class="flow">
+          <span class="pill">plan</span><span class="arrow">→</span>
+          <span class="pill">teach</span><span class="arrow">→</span>
+          <span class="pill">assess</span><span class="arrow">→</span>
+          <span class="pill hot">diagnose</span><span class="arrow">→</span>
+          <span class="pill">adapt</span><span class="arrow">↺</span>
+        </div>
+      </section>
+
+      <!-- 4 -->
+      <section class="slide">
+        <div class="kicker">The solution</div>
+        <h2>Six autonomous agents run the whole loop.</h2>
+        <p class="lead">One input — a learning goal. Everything else is decided by the system. In autopilot, a simulated learner even answers the quizzes, so a full session runs with zero human input.</p>
+      </section>
+
+      <!-- 5 -->
+      <section class="slide">
+        <div class="kicker">The crew</div>
+        <h2>Each agent, one job.</h2>
+        <div class="agentgrid">
+          <div class="agent" style="border-color:#c084fc55"><div class="g" style="color:var(--orchestrator)">◎</div><div class="n">Orchestrator</div><div class="r">Decides the next move</div></div>
+          <div class="agent" style="border-color:#7c83ff55"><div class="g" style="color:var(--planner)">✦</div><div class="n">Planner</div><div class="r">Designs the learning path</div></div>
+          <div class="agent" style="border-color:#3ecf8e55"><div class="g" style="color:var(--tutor)">❂</div><div class="n">Tutor</div><div class="r">Teaches each concept</div></div>
+          <div class="agent" style="border-color:#ffb02055"><div class="g" style="color:var(--assessor)">◈</div><div class="n">Assessor</div><div class="r">Checks understanding</div></div>
+          <div class="agent" style="border-color:#ff5d7355"><div class="g" style="color:var(--diagnostician)">⚕</div><div class="n">Diagnostician</div><div class="r">Finds gaps, triggers remediation</div></div>
+          <div class="agent" style="border-color:#22d3ee55"><div class="g" style="color:var(--learner)">◍</div><div class="n">Learner</div><div class="r">Answers and progresses</div></div>
+        </div>
+      </section>
+
+      <!-- 6 -->
+      <section class="slide">
+        <div class="kicker">The headline behavior</div>
+        <h2>It <span class="grad">rewrites its own plan.</span></h2>
+        <p class="lead">When a wrong answer traces to a missing prerequisite, the Orchestrator injects a remedial micro-lesson it never originally planned, teaches it, then returns to the blocked concept. Nobody scripted it — it's a decision from the learner's state.</p>
+        <div class="flow">
+          <span class="pill">missed check</span><span class="arrow">→</span>
+          <span class="pill hot">misconception found</span><span class="arrow">→</span>
+          <span class="pill" style="border-color:var(--planner);color:var(--planner)">plan rewritten</span><span class="arrow">→</span>
+          <span class="pill">gap closed</span>
+        </div>
+      </section>
+
+      <!-- 7 -->
+      <section class="slide">
+        <div class="kicker">Live demo</div>
+        <h2>Watch it run.</h2>
+        <p class="lead">Autopilot run of "Understand recursion": the plan builds, agents light up as they act, the activity stream shows every autonomous decision, and a remediation lesson is auto-added live. Then an interactive run with a human answering.</p>
+        <p class="hint" style="margin-top:18px">→ switch to the app</p>
+      </section>
+
+      <!-- 8 -->
+      <section class="slide">
+        <div class="kicker">Engineering</div>
+        <h2>Production-shaped, demo-safe.</h2>
+        <div class="two">
+          <div class="card">
+            <h3>Stack</h3>
+            <ul>
+              <li>Node + Express (tsx) · React control room</li>
+              <li>Redis: state, replayable event log, pub/sub, analytics</li>
+              <li>Real-time via SSE + Redis pub/sub — scales across containers</li>
+              <li>One-command deploy to Scalingo (+ Redis addon)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Why it never breaks on stage</h3>
+            <ul>
+              <li>Provider-agnostic LLM (Anthropic / OpenAI)…</li>
+              <li>…that degrades to a deterministic engine</li>
+              <li>No API key, no network needed for the demo</li>
+              <li>Typed end-to-end · unit + integration + smoke + browser tested</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9 -->
+      <section class="slide">
+        <div class="kicker">Why it scores</div>
+        <h2>Built against the rubric.</h2>
+        <div class="crit">
+          <div><div class="t" style="color:var(--learner)">Autonomy</div><div class="d">Closed multi-step loop to a goal, no human needed</div></div>
+          <div><div class="t" style="color:var(--planner)">Innovation</div><div class="d">Multi-agent orchestration + self-rewriting plans</div></div>
+          <div><div class="t" style="color:var(--tutor)">Impact</div><div class="d">Scalable 1:1 tutoring for every learner</div></div>
+          <div><div class="t" style="color:var(--orchestrator)">Theme</div><div class="d">Agentic by design, with emergent behavior</div></div>
+          <div><div class="t" style="color:var(--assessor)">Quality</div><div class="d">Typed, tested, verified, polished demo</div></div>
+        </div>
+      </section>
+
+      <!-- 10 -->
+      <section class="slide">
+        <div class="logo">
+          <div class="mark">🏛️</div>
+          <div><div style="font-size:22px;font-weight:800;">Agora</div></div>
+        </div>
+        <h1>Autonomous, adaptive tutoring <span class="grad">for every learner.</span></h1>
+        <p class="lead">And fittingly — this project about agentic AI was built by an agentic workflow: agents writing code, reviewing each other, and verifying the result before shipping.</p>
+        <p class="hint" style="margin-top:18px">github.com/iliaskalalou/agora-agentic-tutor</p>
+      </section>
+    </div>
+
+    <footer>
+      <div class="dots" id="dots"></div>
+      <div><span id="counter">1 / 10</span> &nbsp;·&nbsp; <span class="hint">← → to navigate</span></div>
+    </footer>
+
+    <script>
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const dotsEl = document.getElementById("dots");
+      const counter = document.getElementById("counter");
+      let i = 0;
+      slides.forEach((_, idx) => {
+        const d = document.createElement("div");
+        d.className = "dot" + (idx === 0 ? " on" : "");
+        d.onclick = () => go(idx);
+        dotsEl.appendChild(d);
+      });
+      const dots = Array.from(dotsEl.children);
+      function go(n) {
+        i = Math.max(0, Math.min(slides.length - 1, n));
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        dots.forEach((d, idx) => d.classList.toggle("on", idx === i));
+        counter.textContent = `${i + 1} / ${slides.length}`;
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") go(i + 1);
+        if (e.key === "ArrowLeft" || e.key === "PageUp") go(i - 1);
+        if (e.key === "Home") go(0);
+        if (e.key === "End") go(slides.length - 1);
+      });
+      document.addEventListener("click", (e) => {
+        if (e.target.closest(".dot") || e.target.closest("footer")) return;
+        go(i + 1);
+      });
+    </script>
+  </body>
+</html>

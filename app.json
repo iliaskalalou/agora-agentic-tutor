@@ -1,0 +1,31 @@
+{
+  "name": "Agora — Autonomous Multi-Agent Tutor",
+  "description": "The self-driving classroom: AI agents plan, teach, assess, diagnose and adapt a personalized learning loop with minimal human intervention.",
+  "repository": "https://github.com/iliaskalalou/agora-agentic-tutor",
+  "keywords": ["agentic-ai", "education", "node", "redis", "scalingo", "multi-agent"],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production"
+    },
+    "MAX_RUN_STEPS": {
+      "description": "Safety bound on autonomous steps per learning run",
+      "value": "60",
+      "required": false
+    },
+    "ANTHROPIC_API_KEY": {
+      "description": "Optional. Enables live LLM tutoring. Without it, Agora uses its deterministic simulation engine.",
+      "required": false
+    }
+  },
+  "addons": ["scalingo-redis"],
+  "scripts": {
+    "postdeploy": "node scripts/postdeploy-check.mjs"
+  },
+  "formation": {
+    "web": {
+      "amount": 1,
+      "size": "S"
+    }
+  }
+}
