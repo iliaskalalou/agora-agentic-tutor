@@ -51,7 +51,7 @@ const Parsed = z.object({
 });
 
 const SYSTEM =
-  "You are a curriculum author. Generate exactly 3 progressive practice sub-skills for a school topic. Each has a short title, a one-sentence summary, ONE multiple-choice question with exactly 4 distinct choices, and the correct answer text (which MUST be exactly equal to one of the 4 choices). Keep everything factually correct and at the stated school level. Output only the JSON.";
+  "You are a curriculum author. Generate exactly 3 progressive practice sub-skills for a school topic. Each has a short title, a one-sentence summary, ONE multiple-choice question with exactly 4 distinct choices, and the correct answer text (which MUST be exactly equal to one of the 4 choices). Write EVERYTHING IN ENGLISH. You MUST theme every question vividly and concretely around the learner's interests — set each question in that world (its characters, objects, places, numbers) — while still correctly testing the concept. Keep it factually correct and at the stated school level. Output only the JSON.";
 
 function difficultyFor(i: number): Difficulty {
   return i === 0 ? "intro" : i === 1 ? "core" : "advanced";
@@ -62,15 +62,19 @@ export async function buildCategoryTopic(args: {
   subjectId: string;
   categoryId: string;
   goal: string;
+  interests: string[];
 }): Promise<KBTopic> {
   const subject = findSubject(args.cursus, args.subjectId);
   const categoryName = findCategoryName(args.cursus, args.subjectId, args.categoryId);
   if (!subject || !categoryName) return buildGenericTopic(args.goal);
 
-  const level = args.cursus === "college" ? "French middle-school (collège)" : "French high-school (lycée)";
+  const level = args.cursus === "college" ? "middle school" : "high school";
+  const interests = args.interests.length ? args.interests.join(", ") : "general topics";
   const raw = await chat(
     SYSTEM,
-    `Subject: ${subject.name}. Topic/category: ${categoryName}. Level: ${level}. Generate the 3 sub-skills now.`,
+    `Subject: ${subject.name}. Topic/category: ${categoryName}. Level: ${level}.\n` +
+      `The learner LOVES: ${interests}. Set EVERY question explicitly in that world — this is required, not optional. ` +
+      `Generate the 3 sub-skills now, in English.`,
     700,
     GEN_SCHEMA,
   );

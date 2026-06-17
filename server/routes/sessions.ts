@@ -63,7 +63,13 @@ sessionsRouter.post("/", async (req, res) => {
     subjectId && categoryId
       ? planFromTopic(
           goal,
-          await buildCategoryTopic({ cursus: cursus ?? "college", subjectId, categoryId, goal }),
+          await buildCategoryTopic({
+            cursus: cursus ?? "college",
+            subjectId,
+            categoryId,
+            goal,
+            interests: interests ?? [],
+          }),
         )
       : planLearningPath(goal);
 
