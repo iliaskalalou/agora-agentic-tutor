@@ -11,9 +11,27 @@ export default function LevelingTab({ xp, avatar }: { xp: number; avatar?: Avata
   const toNext = xpToNextLevel(xp);
   const isMax = level >= MAX_LEVEL;
   const base = avatar ?? BASE_AVATAR;
+  const nextUnlock = ACCESSORY_UNLOCKS.find((u) => u.level === level + 1);
+  const message = isMax
+    ? "You've reached the top — keep your knowledge sharp!"
+    : nextUnlock
+      ? `Keep up your effort! ${toNext} XP to unlock "${nextUnlock.label}".`
+      : "Keep up your effort — you're doing great!";
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6">
+      {/* Current avatar with an encouraging speech bubble */}
+      <div className="panel panel-pad flex flex-col items-center gap-5 sm:flex-row sm:gap-6">
+        <Avatar config={base} size={150} />
+        <div className="relative w-full sm:flex-1">
+          <div className="rounded-2xl border border-brand-200 bg-brand-50 px-5 py-4 text-center text-sm font-semibold text-brand-700 sm:text-left">
+            {message}
+          </div>
+          {/* speech-bubble tail (points up on mobile, left on desktop) */}
+          <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-l border-t border-brand-200 bg-brand-50 sm:left-0 sm:top-1/2" />
+        </div>
+      </div>
+
       {/* XP / Level card */}
       <div className="panel panel-pad">
         <div className="flex items-center gap-4">
