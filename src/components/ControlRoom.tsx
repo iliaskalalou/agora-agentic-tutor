@@ -7,7 +7,6 @@ import TutorPanel from "./TutorPanel";
 import AssessmentPanel from "./AssessmentPanel";
 import ActivityStream from "./ActivityStream";
 import SummaryCard from "./SummaryCard";
-import DocumentReview from "./DocumentReview";
 import { cx } from "../util";
 
 export default function ControlRoom({
@@ -44,14 +43,12 @@ export default function ControlRoom({
         <div className={cx("space-y-4", advanced ? "lg:col-span-3" : "lg:col-span-4")}>
           {advanced && <AgentRoster activeAgent={activeAgent} status={session.status} />}
           <MetricsPanel session={session} />
-          {!advanced && <DocumentReview sessionId={session.id} />}
         </div>
 
         <div className={cx("space-y-4", advanced ? "lg:col-span-5" : "lg:col-span-8")}>
           {completed && <SummaryCard summary={session.summary!} onRestart={onRestart} />}
           <TutorPanel lesson={lesson} />
           {!completed && <AssessmentPanel session={session} submitting={submitting} onAnswer={onAnswer} />}
-          {advanced && <DocumentReview sessionId={session.id} />}
         </div>
 
         {advanced && (

@@ -113,6 +113,12 @@ export type SessionMode = "autopilot" | "interactive";
 // School level (French system).
 export type Cursus = "college" | "lycee";
 
+// Grade levels within each cursus.
+export const NIVEAUX: Record<Cursus, string[]> = {
+  college: ["6e", "5e", "4e", "3e"],
+  lycee: ["2nde", "1re", "Terminale"],
+};
+
 // Customizable humanoid avatar: hair (+ color), shirt, pants, shoes, skin tone.
 export type HairStyle = "short" | "long" | "buzz" | "ponytail" | "curly" | "bald";
 
@@ -135,6 +141,8 @@ export interface LearnerProfile {
   avatar: AvatarConfig;
   /** School level, used to scope generated content. */
   cursus?: Cursus;
+  /** Grade within the cursus (e.g. "4e", "Terminale"). */
+  niveau?: string;
 }
 
 export interface RunMetrics {
@@ -225,6 +233,7 @@ export interface CreateSessionRequest {
   interests?: string[];
   avatar?: AvatarConfig;
   cursus?: Cursus;
+  niveau?: string;
   /** When practicing a specific curriculum category. */
   subjectId?: string;
   categoryId?: string;
@@ -303,6 +312,7 @@ export interface UserProfile {
   username: string;
   displayName: string;
   cursus: Cursus;
+  niveau?: string;
   interests: string[];
   avatar: AvatarConfig;
   xp: number;
@@ -316,4 +326,60 @@ export interface LeaderboardEntry {
   displayName: string;
   avatar: AvatarConfig;
   xp: number;
+}
+
+// ---------------------------------------------------------------------------
+// Quiz: a ~20-question practice on a curriculum category. Questions are AI
+// generated IN ENGLISH, strongly themed to the learner's interests, a mix of
+// MCQ and open questions. They are generated in batches and revealed
+// progressively. Open answers are graded by the AI.
+// ---------------------------------------------------------------------------
+
+export interface QuizAnswerRecord {
+  questionId: string;
+  correct: boolean;
+  score: number;
+  feedback: string;
+}
+
+export interface QuizState {
+  id: string;
+  cursus: Cursus;
+  niveau?: string;
+  subjectId: string;
+  categoryId: string;
+  subjectLabel: string;
+  categoryLabel: string;
+  /** Target number of questions (e.g. 20). */
+  total: number;
+  /** Public questions (answer keys stripped). Grows as batches are generated. */
+  questions: Question[];
+  /** True while more questions are still being generated in the background. */
+  generating: boolean;
+  currentIndex: number;
+  answers: QuizAnswerRecord[];
+  /** Number of correct answers so far. */
+  score: number;
+  status: "active" | "completed";
+  createdAt: number;
+}
+
+export interface CreateQuizRequest {
+  cursus: Cursus;
+  niveau?: string;
+  subjectId: string;
+  categoryId: string;
+  subjectLabel: string;
+  categoryLabel: string;
+  interests: string[];
+}
+
+export interface QuizAnswerResponse {
+  correct: boolean;
+  score: number;
+  feedback: string;
+  /** For open questions: a short ideal answer, shown after grading. */
+  expected?: string;
+  /** True when this was the last question and the quiz is complete. */
+  done: boolean;
 }

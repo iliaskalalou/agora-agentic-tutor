@@ -62,13 +62,13 @@ export default function AssessmentPanel({
                 className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
               />
               <button className="btn-primary !px-4" disabled={submitting || !text.trim()} onClick={() => onAnswer(question.id, text)}>
-                Send
+                Submit
               </button>
             </div>
           )}
 
           {!awaiting && session.mode === "autopilot" && (
-            <div className="mt-3 text-xs text-slate-400">The demo learner is answering…</div>
+            <div className="mt-3 text-xs text-slate-400">The demo student is answering…</div>
           )}
         </div>
       ) : (

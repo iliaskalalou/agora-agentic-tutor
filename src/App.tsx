@@ -23,7 +23,7 @@ function loadProfile(): Profile | null {
     if (!raw) return null;
     const p = JSON.parse(raw) as Partial<Profile>;
     // Validate the shape (avatars/cursus evolved); force re-onboarding if stale.
-    if (!p.name || !p.cursus || !p.avatar || typeof p.avatar.skin !== "string" || !p.avatar.hair) {
+    if (!p.name || !p.cursus || !p.niveau || !p.avatar || typeof p.avatar.skin !== "string" || !p.avatar.hair) {
       return null;
     }
     return p as Profile;
@@ -167,7 +167,7 @@ export default function App() {
         advanced={advanced}
         onToggleAdvanced={() => setAdvanced((v) => !v)}
         onEditProfile={() => setEditingProfile(true)}
-        onRestart={session ? handleRestart : undefined}
+        onGoHome={handleRestart}
       />
       {session ? (
         <ControlRoom

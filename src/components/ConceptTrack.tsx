@@ -3,9 +3,9 @@ import { cx } from "../util";
 
 const STATUS_STYLE: Record<Concept["status"], { ring: string; dot: string; label: string }> = {
   pending: { ring: "border-slate-200", dot: "bg-slate-300", label: "up next" },
-  teaching: { ring: "border-tutor/40", dot: "bg-tutor", label: "learning" },
+  teaching: { ring: "border-tutor/40", dot: "bg-tutor", label: "in progress" },
   assessing: { ring: "border-assessor/40", dot: "bg-assessor", label: "exercise" },
-  remediating: { ring: "border-diagnostician/40", dot: "bg-diagnostician", label: "reviewing" },
+  remediating: { ring: "border-diagnostician/40", dot: "bg-diagnostician", label: "review" },
   mastered: { ring: "border-tutor/40", dot: "bg-tutor", label: "done" },
 };
 
