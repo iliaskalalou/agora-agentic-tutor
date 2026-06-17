@@ -51,14 +51,27 @@ const Parsed = z.object({
 });
 
 const SYSTEM =
-  "You are a curriculum author. Generate exactly 3 progressive practice sub-skills for a school topic. Each has a short title, a one-sentence summary, ONE multiple-choice question with exactly 4 distinct choices, and the correct answer text (which MUST be exactly equal to one of the 4 choices). Write EVERYTHING IN ENGLISH. You MUST theme every question vividly and concretely around the learner's interests — set each question in that world (its characters, objects, places, numbers) — while still correctly testing the concept. Keep it factually correct and at the stated school level. Output only the JSON.";
+  "You are a curriculum author. Generate exactly 3 progressive practice sub-skills for a school topic. Each has a short title, a one-sentence summary, ONE multiple-choice question with exactly 4 distinct choices, and the correct answer text (which MUST be exactly equal to one of the 4 choices). Write EVERYTHING IN ENGLISH. You MUST theme every question vividly and concretely around the learner's interests — set each question in that world (its characters, objects, places, numbers) — while still correctly testing the concept. Keep it factually correct and STRICTLY at the stated grade level — the difficulty must match that exact grade, never harder and never easier. Output only the JSON.";
 
 function difficultyFor(i: number): Difficulty {
   return i === 0 ? "intro" : i === 1 ? "core" : "advanced";
 }
 
+// Map a French grade to an age/US-grade description so the model can calibrate
+// difficulty precisely (6e and 3e are very different).
+const GRADE_INFO: Record<string, string> = {
+  "6e": "French 6e — US grade 6, about 11 years old",
+  "5e": "French 5e — US grade 7, about 12 years old",
+  "4e": "French 4e — US grade 8, about 13 years old",
+  "3e": "French 3e — US grade 9, about 14 years old",
+  "2nde": "French 2nde — US grade 10, about 15 years old",
+  "1re": "French 1re — US grade 11, about 16 years old",
+  Terminale: "French Terminale — US grade 12, about 17-18 years old",
+};
+
 export async function buildCategoryTopic(args: {
   cursus: Cursus;
+  niveau?: string;
   subjectId: string;
   categoryId: string;
   goal: string;
@@ -69,10 +82,13 @@ export async function buildCategoryTopic(args: {
   if (!subject || !categoryName) return buildGenericTopic(args.goal);
 
   const level = args.cursus === "college" ? "middle school" : "high school";
+  const grade = (args.niveau && GRADE_INFO[args.niveau]) || `${level} level`;
   const interests = args.interests.length ? args.interests.join(", ") : "general topics";
   const raw = await chat(
     SYSTEM,
-    `Subject: ${subject.name}. Topic/category: ${categoryName}. Level: ${level}.\n` +
+    `Subject: ${subject.name}. Topic/category: ${categoryName}.\n` +
+      `EXACT LEVEL: ${grade}. Calibrate EVERY question precisely to this exact grade — not too easy, not too hard. ` +
+      `All 3 sub-skills must stay within this grade's difficulty (only gently progressive, never beyond it).\n` +
       `The learner LOVES: ${interests}. Set EVERY question explicitly in that world — this is required, not optional. ` +
       `Generate the 3 sub-skills now, in English.`,
     700,

@@ -117,6 +117,7 @@ export default function App() {
               interests: profile.interests,
               avatar: profile.avatar,
               cursus: profile.cursus,
+              niveau: profile.niveau,
             }
           : req;
         const { session: created } = await api.createSession(enriched);

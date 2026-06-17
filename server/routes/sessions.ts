@@ -29,6 +29,7 @@ const createSchema = z.object({
     })
     .optional(),
   cursus: z.enum(["college", "lycee"]).optional(),
+  niveau: z.string().max(20).optional(),
   subjectId: z.string().max(40).optional(),
   categoryId: z.string().max(60).optional(),
 });
@@ -54,7 +55,7 @@ sessionsRouter.post("/", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid request", details: parsed.error.flatten() });
   }
-  const { goal, mode, learnerName, simulatedSkill, interests, avatar, cursus, subjectId, categoryId } =
+  const { goal, mode, learnerName, simulatedSkill, interests, avatar, cursus, niveau, subjectId, categoryId } =
     parsed.data;
 
   // A curriculum category practice generates its path with the LLM; otherwise we
@@ -65,6 +66,7 @@ sessionsRouter.post("/", async (req, res) => {
           goal,
           await buildCategoryTopic({
             cursus: cursus ?? "college",
+            niveau,
             subjectId,
             categoryId,
             goal,
