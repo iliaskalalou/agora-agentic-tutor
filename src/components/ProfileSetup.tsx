@@ -1,7 +1,8 @@
 import { useState } from "react";
-import type { AvatarConfig, Cursus, HairStyle } from "../../shared/types";
+import type { AccessoryId, AvatarConfig, Cursus, HairStyle } from "../../shared/types";
 import { NIVEAUX } from "../../shared/types";
 import Avatar, { HAIR_STYLES, SKIN_TONES, HAIR_COLORS, CLOTHING_COLORS, randomAvatar } from "./Avatar";
+import { ACCESSORY_UNLOCKS, getUnlockedAccessories } from "../utils/leveling";
 import { cx } from "../util";
 
 export interface Profile {
@@ -10,6 +11,7 @@ export interface Profile {
   niveau: string;
   interests: string[];
   avatar: AvatarConfig;
+  xp: number;
 }
 
 const SUGGESTED = [
@@ -79,6 +81,9 @@ export default function ProfileSetup({
   const [avatar, setAvatar] = useState<AvatarConfig>(initial?.avatar ?? randomAvatar());
   const [interests, setInterests] = useState<string[]>(initial?.interests ?? []);
   const [custom, setCustom] = useState("");
+
+  const xp = initial?.xp ?? 0;
+  const unlockedAccessories = getUnlockedAccessories(xp);
 
   const changeCursus = (c: Cursus) => {
     setCursus(c);
@@ -150,7 +155,7 @@ export default function ProfileSetup({
             </div>
           </div>
 
-          {/* Niveau */}
+          {/* Grade */}
           <div>
             <div className="label mb-2">Grade</div>
             <div className="flex flex-wrap gap-2">
@@ -212,6 +217,49 @@ export default function ProfileSetup({
             </div>
           </div>
 
+          {/* Accessory (unlocked by level) */}
+          <div>
+            <div className="label mb-2">Accessory</div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => set({ accessory: "none" as AccessoryId })}
+                className={cx(
+                  "flex flex-col items-center gap-1 rounded-lg border p-1.5 transition",
+                  (avatar.accessory ?? "none") === "none"
+                    ? "border-brand-400 bg-brand-50"
+                    : "border-slate-200 hover:bg-slate-50",
+                )}
+              >
+                <Avatar config={{ ...avatar, accessory: "none" }} size={40} />
+                <span className="text-[10px] text-slate-500">None</span>
+              </button>
+
+              {ACCESSORY_UNLOCKS.map((unlock) => {
+                const isUnlocked = unlockedAccessories.includes(unlock.accessoryId);
+                return (
+                  <button
+                    key={unlock.accessoryId}
+                    disabled={!isUnlocked}
+                    onClick={() => isUnlocked && set({ accessory: unlock.accessoryId })}
+                    title={isUnlocked ? unlock.label : `Unlocks at level ${unlock.level}`}
+                    className={cx(
+                      "flex flex-col items-center gap-1 rounded-lg border p-1.5 transition",
+                      !isUnlocked && "cursor-not-allowed opacity-40 grayscale",
+                      isUnlocked && avatar.accessory === unlock.accessoryId
+                        ? "border-brand-400 bg-brand-50"
+                        : isUnlocked
+                          ? "border-slate-200 hover:bg-slate-50"
+                          : "border-slate-200",
+                    )}
+                  >
+                    <Avatar config={{ ...avatar, accessory: isUnlocked ? unlock.accessoryId : "none" }} size={40} />
+                    <span className="text-[10px] text-slate-500">{isUnlocked ? unlock.label : `Lv.${unlock.level}`}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Interests */}
           <div>
             <div className="label mb-2">Your interests</div>
@@ -249,7 +297,7 @@ export default function ProfileSetup({
           <button
             className="btn-primary w-full"
             disabled={!valid}
-            onClick={() => onDone({ name: name.trim(), cursus, niveau, interests, avatar })}
+            onClick={() => onDone({ name: name.trim(), cursus, niveau, interests, avatar, xp })}
           >
             {initial ? "Save" : "Get started"}
           </button>

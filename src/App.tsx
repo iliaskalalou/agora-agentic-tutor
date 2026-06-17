@@ -14,6 +14,7 @@ import Header from "./components/Header";
 import SubjectBrowser from "./components/SubjectBrowser";
 import ControlRoom from "./components/ControlRoom";
 import ProfileSetup, { type Profile } from "./components/ProfileSetup";
+import { computeSessionXp } from "./utils/leveling";
 
 const PROFILE_KEY = "agora.profile.v1";
 
@@ -26,6 +27,7 @@ function loadProfile(): Profile | null {
     if (!p.name || !p.cursus || !p.niveau || !p.avatar || typeof p.avatar.skin !== "string" || !p.avatar.hair) {
       return null;
     }
+    if (typeof p.xp !== "number") p.xp = 0;
     return p as Profile;
   } catch {
     return null;
@@ -69,7 +71,26 @@ export default function App() {
       }
       setEvents((prev) => [...prev, e]);
       if (e.type === "lesson" && e.data?.lesson) setLesson(e.data.lesson as Lesson);
-      if (e.type === "run.complete") refreshStats();
+      if (e.type === "run.complete") {
+        refreshStats();
+        setSession((prev) => {
+          if (!prev) return prev;
+          const mastered = prev.plan?.concepts.filter((c) => c.status === "mastered") ?? [];
+          const avgMastery = mastered.length
+            ? mastered.reduce((s, c) => s + c.mastery, 0) / mastered.length
+            : 0;
+          const earned = computeSessionXp(mastered.length, avgMastery);
+          if (earned > 0) {
+            setProfile((p) => {
+              if (!p) return p;
+              const updated = { ...p, xp: p.xp + earned };
+              try { localStorage.setItem(PROFILE_KEY, JSON.stringify(updated)); } catch { /* */ }
+              return updated;
+            });
+          }
+          return prev;
+        });
+      }
     });
     return close;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -186,6 +207,8 @@ export default function App() {
           presets={presets}
           starting={starting}
           profileName={profile.name}
+          xp={profile.xp}
+          avatar={profile.avatar}
           onStartCategory={handleStartCategory}
           onStartGoal={handleStartGoal}
         />

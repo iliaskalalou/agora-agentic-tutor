@@ -1,4 +1,4 @@
-import type { AvatarConfig, HairStyle } from "../../shared/types";
+import type { AccessoryId, AvatarConfig, HairStyle } from "../../shared/types";
 
 // ---------------------------------------------------------------------------
 // Option lists for the customizer UI.
@@ -112,6 +112,113 @@ function Hair({ style, color }: { style: HairStyle; color: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// Accessory layer — drawn on top of the avatar.
+// viewBox is 0 0 64 80; head centred at x=32, skull top ~y=14.
+// ---------------------------------------------------------------------------
+
+function Accessory({ id }: { id: AccessoryId }) {
+  switch (id) {
+    case "tophat":
+      return (
+        <g>
+          <rect x="20" y="2" width="24" height="13" rx="2" fill="#1e293b" />
+          <rect x="14" y="13" width="36" height="4" rx="2" fill="#334155" />
+        </g>
+      );
+    case "sword":
+      return (
+        <g transform="rotate(-25 54 32)">
+          <rect x="52" y="5" width="4" height="36" rx="1.5" fill="#94a3b8" />
+          <rect x="47" y="29" width="14" height="4" rx="2" fill="#78716c" />
+          <rect x="53" y="33" width="3" height="10" rx="1.5" fill="#92400e" />
+        </g>
+      );
+    case "crown":
+      return (
+        <g fill="#f59e0b">
+          <polygon points="16,16 20,6 27,13 32,4 37,13 44,6 48,16" />
+          <rect x="15" y="14" width="34" height="5" rx="1" fill="#fbbf24" />
+        </g>
+      );
+    case "graduation":
+      return (
+        <g>
+          <polygon points="32,6 50,13 32,20 14,13" fill="#1e293b" />
+          <rect x="29" y="2" width="6" height="7" rx="1" fill="#1e293b" />
+          <line x1="46" y1="13" x2="49" y2="22" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="49" cy="23" r="2" fill="#f59e0b" />
+        </g>
+      );
+    case "cap":
+      return (
+        <g>
+          <path d="M18 21 Q18 9 32 9 Q46 9 46 21 Q44 17 32 16 Q20 17 18 21 Z" fill="#dc2626" />
+          <path d="M15 20 Q32 23 49 20 L47 24 Q32 27 17 24 Z" fill="#b91c1c" />
+          <circle cx="32" cy="10" r="2" fill="#fbbf24" />
+        </g>
+      );
+    case "shield":
+      return (
+        <g transform="translate(-4 0)">
+          <path d="M10 34 Q6 26 8 18 L18 18 Q20 26 14 34 Z" fill="#3b82f6" />
+          <path d="M12 22 L12 30 M9 26 L15 26" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+      );
+    case "wizard":
+      return (
+        <g>
+          <polygon points="32,0 17,20 47,20" fill="#7c3aed" />
+          <rect x="14" y="18" width="36" height="5" rx="2.5" fill="#6d28d9" />
+          <circle cx="32" cy="8" r="2" fill="#fbbf24" opacity="0.9" />
+        </g>
+      );
+    case "star":
+      return (
+        <polygon
+          points="32,1 34,8 41,8 36,12 38,19 32,15 26,19 28,12 23,8 30,8"
+          fill="#fbbf24"
+          stroke="#f59e0b"
+          strokeWidth="0.5"
+        />
+      );
+    case "flame":
+      return (
+        <g>
+          <path
+            d="M32 2 Q37 7 35 12 Q39 8 37 14 Q41 9 38 16 Q35 11 32 15 Q29 11 26 16 Q23 9 27 14 Q25 8 29 12 Q27 7 32 2 Z"
+            fill="#f97316"
+          />
+          <path
+            d="M32 6 Q35 10 33 13 Q35 11 34 14 Q32 11 30 14 Q29 11 31 13 Q29 10 32 6 Z"
+            fill="#fef08a"
+          />
+        </g>
+      );
+    case "gem":
+      return (
+        <g>
+          <polygon points="32,1 40,8 32,17 24,8" fill="#06b6d4" opacity="0.95" />
+          <polygon points="32,1 36,8 32,8 28,8" fill="#67e8f9" opacity="0.8" />
+        </g>
+      );
+    case "cape":
+      return (
+        <g>
+          <path d="M20 43 Q10 55 14 75 Q22 70 32 72 Q42 70 50 75 Q54 55 44 43 Q38 47 32 46 Q26 47 20 43 Z" fill="#dc2626" opacity="0.9" />
+          <path d="M20 43 Q26 50 32 48 Q38 50 44 43" fill="none" stroke="#b91c1c" strokeWidth="1" />
+        </g>
+      );
+    case "halo":
+      return (
+        <ellipse cx="32" cy="9" rx="13" ry="4" fill="none" stroke="#fbbf24" strokeWidth="3" opacity="0.9" />
+      );
+    case "none":
+    default:
+      return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Avatar — a friendly flat-design chibi humanoid built from layered parts.
 // ---------------------------------------------------------------------------
 
@@ -171,6 +278,11 @@ export default function Avatar({
 
       {/* 6. Hair on top */}
       <Hair style={config.hair} color={config.hairColor} />
+
+      {/* 7. Accessory (unlocked by level) */}
+      {config.accessory && config.accessory !== "none" && (
+        <Accessory id={config.accessory} />
+      )}
     </svg>
   );
 }
