@@ -3,13 +3,15 @@ import type {
   AgentEvent,
   AggregateStats,
   CreateSessionRequest,
+  CurriculumTree,
   GoalPreset,
   Lesson,
+  SessionMode,
   SessionState,
 } from "../shared/types";
 import { api, streamSession, type RuntimeInfo } from "./api";
 import Header from "./components/Header";
-import GoalLauncher from "./components/GoalLauncher";
+import SubjectBrowser from "./components/SubjectBrowser";
 import ControlRoom from "./components/ControlRoom";
 import ProfileSetup, { type Profile } from "./components/ProfileSetup";
 
@@ -18,7 +20,13 @@ const PROFILE_KEY = "agora.profile.v1";
 function loadProfile(): Profile | null {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
-    return raw ? (JSON.parse(raw) as Profile) : null;
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Partial<Profile>;
+    // Validate the shape (avatars/cursus evolved); force re-onboarding if stale.
+    if (!p.name || !p.cursus || !p.avatar || typeof p.avatar.skin !== "string" || !p.avatar.hair) {
+      return null;
+    }
+    return p as Profile;
   } catch {
     return null;
   }
@@ -27,6 +35,7 @@ function loadProfile(): Profile | null {
 export default function App() {
   const [info, setInfo] = useState<RuntimeInfo | null>(null);
   const [presets, setPresets] = useState<GoalPreset[]>([]);
+  const [curriculum, setCurriculum] = useState<CurriculumTree | null>(null);
   const [stats, setStats] = useState<AggregateStats | null>(null);
 
   const [profile, setProfile] = useState<Profile | null>(() => loadProfile());
@@ -46,6 +55,7 @@ export default function App() {
   useEffect(() => {
     api.info().then(setInfo).catch(() => undefined);
     api.presets().then((r) => setPresets(r.presets)).catch(() => undefined);
+    api.curriculum().then((r) => setCurriculum(r.curriculum)).catch(() => undefined);
     refreshStats();
   }, [refreshStats]);
 
@@ -80,7 +90,13 @@ export default function App() {
       setStarting(true);
       try {
         const enriched: CreateSessionRequest = profile
-          ? { ...req, learnerName: profile.name, interests: profile.interests, avatar: profile.avatar }
+          ? {
+              ...req,
+              learnerName: profile.name,
+              interests: profile.interests,
+              avatar: profile.avatar,
+              cursus: profile.cursus,
+            }
           : req;
         const { session: created } = await api.createSession(enriched);
         setEvents([]);
@@ -94,6 +110,25 @@ export default function App() {
       }
     },
     [profile],
+  );
+
+  const handleStartGoal = useCallback(
+    (goal: string, mode: SessionMode) => {
+      void handleStart({ goal, mode });
+    },
+    [handleStart],
+  );
+
+  const handleStartCategory = useCallback(
+    (a: { subjectId: string; categoryId: string; subjectName: string; categoryName: string; mode: SessionMode }) => {
+      void handleStart({
+        goal: `${a.categoryName} — ${a.subjectName}`,
+        mode: a.mode,
+        subjectId: a.subjectId,
+        categoryId: a.categoryId,
+      });
+    },
+    [handleStart],
   );
 
   const handleAnswer = useCallback(
@@ -145,13 +180,14 @@ export default function App() {
           onRestart={handleRestart}
         />
       ) : (
-        <GoalLauncher
+        <SubjectBrowser
+          curriculum={curriculum}
+          cursus={profile.cursus}
           presets={presets}
-          info={info}
-          stats={stats}
           starting={starting}
           profileName={profile.name}
-          onStart={handleStart}
+          onStartCategory={handleStartCategory}
+          onStartGoal={handleStartGoal}
         />
       )}
     </div>

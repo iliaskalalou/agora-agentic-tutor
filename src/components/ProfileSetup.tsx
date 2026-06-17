@@ -1,28 +1,68 @@
 import { useState } from "react";
-import type { AvatarConfig } from "../../shared/types";
-import Avatar, { AVATAR_CREATURES, AVATAR_COLORS } from "./Avatar";
+import type { AvatarConfig, Cursus, HairStyle } from "../../shared/types";
+import Avatar, { HAIR_STYLES, SKIN_TONES, HAIR_COLORS, CLOTHING_COLORS, randomAvatar } from "./Avatar";
 import { cx } from "../util";
 
 export interface Profile {
   name: string;
+  cursus: Cursus;
   interests: string[];
   avatar: AvatarConfig;
 }
 
 const SUGGESTED = [
   "Football",
-  "Space",
-  "Gaming",
-  "Animals",
-  "Music",
-  "Art",
-  "Dinosaurs",
-  "Cars",
-  "Cooking",
-  "Superheroes",
+  "Espace",
+  "Jeux vidéo",
+  "Animaux",
+  "Musique",
+  "Dessin",
+  "Dinosaures",
+  "Voitures",
+  "Cuisine",
+  "Super-héros",
   "Nature",
-  "Science",
+  "Sciences",
 ];
+
+const HAIR_LABEL: Record<HairStyle, string> = {
+  short: "Court",
+  long: "Long",
+  buzz: "Rasé",
+  ponytail: "Queue",
+  curly: "Bouclé",
+  bald: "Chauve",
+};
+
+function Swatches({
+  values,
+  selected,
+  onPick,
+  round = true,
+}: {
+  values: string[];
+  selected: string;
+  onPick: (v: string) => void;
+  round?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {values.map((v) => (
+        <button
+          key={v}
+          onClick={() => onPick(v)}
+          className={cx(
+            "h-7 w-7 ring-2 ring-offset-2 transition",
+            round ? "rounded-full" : "rounded-md",
+            selected === v ? "ring-slate-400" : "ring-transparent",
+          )}
+          style={{ background: v }}
+          aria-label={v}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function ProfileSetup({
   initial,
@@ -32,12 +72,12 @@ export default function ProfileSetup({
   onDone: (p: Profile) => void;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [creature, setCreature] = useState(initial?.avatar.creature ?? "fox");
-  const [color, setColor] = useState(initial?.avatar.color ?? AVATAR_COLORS[0]);
+  const [cursus, setCursus] = useState<Cursus>(initial?.cursus ?? "college");
+  const [avatar, setAvatar] = useState<AvatarConfig>(initial?.avatar ?? randomAvatar());
   const [interests, setInterests] = useState<string[]>(initial?.interests ?? []);
   const [custom, setCustom] = useState("");
 
-  const avatar: AvatarConfig = { creature, color };
+  const set = (patch: Partial<AvatarConfig>) => setAvatar((a) => ({ ...a, ...patch }));
 
   const toggle = (tag: string) =>
     setInterests((cur) => (cur.includes(tag) ? cur.filter((t) => t !== tag) : [...cur, tag]));
@@ -51,114 +91,139 @@ export default function ProfileSetup({
   const valid = name.trim().length > 0;
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:py-14">
+    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-          Create your learner
-        </h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Crée ton profil</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Your buddy follows you everywhere, and your exercises get themed around what you love.
+          Ton avatar te suit partout, et tes exercices sont adaptés à ce que tu aimes.
         </p>
       </div>
 
-      <div className="panel panel-pad space-y-6">
-        {/* Preview + name */}
-        <div className="flex items-center gap-4">
-          <Avatar config={avatar} size={64} />
-          <div className="flex-1">
-            <label className="label">Your name</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Alex"
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-            />
+      <div className="grid gap-4 md:grid-cols-[260px_1fr]">
+        {/* Live preview */}
+        <div className="panel panel-pad flex flex-col items-center justify-center gap-3">
+          <Avatar config={avatar} size={150} />
+          <div className="text-center">
+            <div className="font-semibold text-slate-900">{name.trim() || "Ton nom"}</div>
+            <div className="text-xs text-slate-400">{cursus === "college" ? "Collège" : "Lycée"}</div>
           </div>
         </div>
 
-        {/* Buddy */}
-        <div>
-          <div className="label mb-2">Pick your buddy</div>
-          <div className="flex gap-3">
-            {AVATAR_CREATURES.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCreature(c)}
-                className={cx(
-                  "rounded-xl border p-2 transition",
-                  creature === c ? "border-brand-400 bg-brand-50" : "border-slate-200 hover:bg-slate-50",
-                )}
-                aria-label={c}
-              >
-                <Avatar config={{ creature: c, color }} size={44} />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Color */}
-        <div>
-          <div className="label mb-2">Pick a color</div>
-          <div className="flex gap-2">
-            {AVATAR_COLORS.map((c) => (
-              <button
-                key={c}
-                onClick={() => setColor(c)}
-                className={cx("h-8 w-8 rounded-full ring-2 ring-offset-2 transition", color === c ? "ring-slate-400" : "ring-transparent")}
-                style={{ background: c }}
-                aria-label={`color ${c}`}
+        {/* Form */}
+        <div className="panel panel-pad space-y-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label">Ton prénom</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="ex. Alex"
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
               />
-            ))}
-          </div>
-        </div>
-
-        {/* Interests */}
-        <div>
-          <div className="label mb-2">What do you like? (themes your exercises)</div>
-          <div className="flex flex-wrap gap-2">
-            {SUGGESTED.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => toggle(tag)}
-                className={cx(
-                  "chip border transition",
-                  interests.includes(tag)
-                    ? "border-brand-400 bg-brand-50 text-brand-700"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
-                )}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-          <div className="mt-2 flex gap-2">
-            <input
-              value={custom}
-              onChange={(e) => setCustom(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addCustom()}
-              placeholder="Add your own…"
-              className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-            />
-            <button className="btn-ghost !px-3" onClick={addCustom}>
-              Add
-            </button>
-          </div>
-          {interests.filter((t) => !SUGGESTED.includes(t)).length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {interests
-                .filter((t) => !SUGGESTED.includes(t))
-                .map((t) => (
-                  <button key={t} onClick={() => toggle(t)} className="chip bg-brand-50 text-brand-700">
-                    {t} ✕
+            </div>
+            <div>
+              <label className="label">Cursus</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                {(["college", "lycee"] as Cursus[]).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCursus(c)}
+                    className={cx(
+                      "rounded-lg border px-3 py-2 text-sm font-semibold transition",
+                      cursus === c ? "border-brand-400 bg-brand-50 text-brand-700" : "border-slate-200 hover:bg-slate-50",
+                    )}
+                  >
+                    {c === "college" ? "Collège" : "Lycée"}
                   </button>
                 ))}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
 
-        <button className="btn-primary w-full" disabled={!valid} onClick={() => onDone({ name: name.trim(), interests, avatar })}>
-          {initial ? "Save" : "Start learning"}
-        </button>
+          {/* Hair style */}
+          <div>
+            <div className="label mb-2">Coiffure</div>
+            <div className="flex flex-wrap gap-2">
+              {HAIR_STYLES.map((h) => (
+                <button
+                  key={h}
+                  onClick={() => set({ hair: h })}
+                  className={cx(
+                    "flex flex-col items-center gap-1 rounded-lg border p-1.5 transition",
+                    avatar.hair === h ? "border-brand-400 bg-brand-50" : "border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  <Avatar config={{ ...avatar, hair: h }} size={40} />
+                  <span className="text-[10px] text-slate-500">{HAIR_LABEL[h]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <div className="label mb-2">Peau</div>
+              <Swatches values={SKIN_TONES} selected={avatar.skin} onPick={(v) => set({ skin: v })} />
+            </div>
+            <div>
+              <div className="label mb-2">Couleur des cheveux</div>
+              <Swatches values={HAIR_COLORS} selected={avatar.hairColor} onPick={(v) => set({ hairColor: v })} />
+            </div>
+            <div>
+              <div className="label mb-2">T-shirt</div>
+              <Swatches values={CLOTHING_COLORS} selected={avatar.shirt} onPick={(v) => set({ shirt: v })} round={false} />
+            </div>
+            <div>
+              <div className="label mb-2">Pantalon</div>
+              <Swatches values={CLOTHING_COLORS} selected={avatar.pants} onPick={(v) => set({ pants: v })} round={false} />
+            </div>
+            <div>
+              <div className="label mb-2">Chaussures</div>
+              <Swatches values={CLOTHING_COLORS} selected={avatar.shoes} onPick={(v) => set({ shoes: v })} round={false} />
+            </div>
+          </div>
+
+          {/* Interests */}
+          <div>
+            <div className="label mb-2">Tes centres d'intérêt</div>
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTED.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => toggle(tag)}
+                  className={cx(
+                    "chip border transition",
+                    interests.includes(tag)
+                      ? "border-brand-400 bg-brand-50 text-brand-700"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+                  )}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 flex gap-2">
+              <input
+                value={custom}
+                onChange={(e) => setCustom(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addCustom()}
+                placeholder="Ajoute le tien…"
+                className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              />
+              <button className="btn-ghost !px-3" onClick={addCustom}>
+                Ajouter
+              </button>
+            </div>
+          </div>
+
+          <button
+            className="btn-primary w-full"
+            disabled={!valid}
+            onClick={() => onDone({ name: name.trim(), cursus, interests, avatar })}
+          >
+            {initial ? "Enregistrer" : "Commencer"}
+          </button>
+        </div>
       </div>
     </div>
   );

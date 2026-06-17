@@ -1,5 +1,5 @@
 import { selectTopic } from "../domain/curriculum";
-import type { KBConcept } from "../domain/curriculum";
+import type { KBConcept, KBTopic } from "../domain/curriculum";
 import type { Concept, LearningPlan } from "../../shared/types";
 import type { Blueprint } from "./types";
 
@@ -19,8 +19,9 @@ function toPublicConcept(kb: KBConcept): Concept {
   };
 }
 
-export function planLearningPath(goal: string): { plan: LearningPlan; blueprint: Blueprint } {
-  const topic = selectTopic(goal);
+// Map any knowledge-base topic (seed or generated) into the public plan + the
+// server-only blueprint the orchestrator runs on.
+export function planFromTopic(goal: string, topic: KBTopic): { plan: LearningPlan; blueprint: Blueprint } {
   const plan: LearningPlan = {
     goal,
     rationale: topic.rationale,
@@ -34,4 +35,8 @@ export function planLearningPath(goal: string): { plan: LearningPlan; blueprint:
     concepts: topic.concepts,
   };
   return { plan, blueprint };
+}
+
+export function planLearningPath(goal: string): { plan: LearningPlan; blueprint: Blueprint } {
+  return planFromTopic(goal, selectTopic(goal));
 }

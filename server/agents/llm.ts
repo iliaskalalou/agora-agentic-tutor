@@ -101,7 +101,13 @@ async function openaiChat(system: string, prompt: string, maxTokens: number): Pr
 }
 
 // Local, keyless LLM via Ollama. No API key is ever required or stored.
-async function ollamaChat(system: string, prompt: string, maxTokens: number): Promise<RawCompletion> {
+// An optional JSON schema constrains the output to valid, well-typed JSON.
+async function ollamaChat(
+  system: string,
+  prompt: string,
+  maxTokens: number,
+  jsonSchema?: unknown,
+): Promise<RawCompletion> {
   const res = await withTimeout((signal) =>
     fetch(`${config.llm.ollamaBaseUrl}/api/chat`, {
       method: "POST",
@@ -110,7 +116,8 @@ async function ollamaChat(system: string, prompt: string, maxTokens: number): Pr
       body: JSON.stringify({
         model: config.llm.ollamaModel,
         stream: false,
-        options: { temperature: 0.85, num_predict: maxTokens },
+        ...(jsonSchema ? { format: jsonSchema } : {}),
+        options: { temperature: jsonSchema ? 0.5 : 0.85, num_predict: maxTokens },
         messages: [
           { role: "system", content: system },
           { role: "user", content: prompt },
@@ -138,7 +145,12 @@ async function ollamaChat(system: string, prompt: string, maxTokens: number): Pr
  * uses its deterministic generator). Any provider error also resolves to null:
  * we degrade gracefully rather than break the autonomous run.
  */
-export async function chat(system: string, prompt: string, maxTokens = 900): Promise<RawCompletion | null> {
+export async function chat(
+  system: string,
+  prompt: string,
+  maxTokens = 900,
+  jsonSchema?: unknown,
+): Promise<RawCompletion | null> {
   const provider = config.llm.provider;
   if (provider === "simulation") return null;
   try {
@@ -146,7 +158,7 @@ export async function chat(system: string, prompt: string, maxTokens = 900): Pro
       provider === "anthropic"
         ? await anthropicChat(system, prompt, maxTokens)
         : provider === "ollama"
-          ? await ollamaChat(system, prompt, maxTokens)
+          ? await ollamaChat(system, prompt, maxTokens, jsonSchema)
           : await openaiChat(system, prompt, maxTokens);
     llmCalls += 1;
     tokensApprox += result.tokensApprox;

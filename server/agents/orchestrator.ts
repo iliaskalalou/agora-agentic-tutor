@@ -117,7 +117,8 @@ async function assessStep(session: SessionState, bp: Blueprint): Promise<Questio
 
   // With a live LLM, personalize the exercise as an avatar-themed scene targeted
   // to the learner's interests. Answer choices stay anchored to the verified KB.
-  if (isLive()) {
+  // Skipped for AI-generated curriculum topics (already tailored to the program).
+  if (isLive() && !bp.topicId.startsWith("cat:")) {
     await emitEvent({
       sessionId: session.id,
       agent: "assessor",

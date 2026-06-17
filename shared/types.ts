@@ -110,11 +110,19 @@ export type SessionStatus =
 
 export type SessionMode = "autopilot" | "interactive";
 
-export type AvatarCreature = "fox" | "owl" | "robot" | "cat";
+// School level (French system).
+export type Cursus = "college" | "lycee";
+
+// Customizable humanoid avatar: hair (+ color), shirt, pants, shoes, skin tone.
+export type HairStyle = "short" | "long" | "buzz" | "ponytail" | "curly" | "bald";
 
 export interface AvatarConfig {
-  creature: AvatarCreature;
-  color: string;
+  skin: string;
+  hair: HairStyle;
+  hairColor: string;
+  shirt: string;
+  pants: string;
+  shoes: string;
 }
 
 export interface LearnerProfile {
@@ -125,6 +133,8 @@ export interface LearnerProfile {
   interests: string[];
   /** The customized avatar that follows the learner across the app. */
   avatar: AvatarConfig;
+  /** School level, used to scope generated content. */
+  cursus?: Cursus;
 }
 
 export interface RunMetrics {
@@ -214,6 +224,10 @@ export interface CreateSessionRequest {
   simulatedSkill?: number;
   interests?: string[];
   avatar?: AvatarConfig;
+  cursus?: Cursus;
+  /** When practicing a specific curriculum category. */
+  subjectId?: string;
+  categoryId?: string;
 }
 
 export interface CreateSessionResponse {
@@ -257,4 +271,49 @@ export interface DocumentReview {
 
 export interface UploadResponse {
   review: DocumentReview;
+}
+
+// ---------------------------------------------------------------------------
+// Curriculum tree: Cursus -> Subject -> Category. Drives the "browse by subject"
+// navigation and scopes AI question generation to a program chapter.
+// ---------------------------------------------------------------------------
+
+export interface CurriculumCategory {
+  id: string;
+  name: string;
+}
+
+export interface CurriculumSubject {
+  id: string;
+  name: string;
+  /** Hex accent color for the subject card. */
+  color: string;
+  categories: CurriculumCategory[];
+}
+
+export type CurriculumTree = Record<Cursus, CurriculumSubject[]>;
+
+// ---------------------------------------------------------------------------
+// Community layer (scaffolded — see ROADMAP.md). Lightweight accounts with no
+// password: a userId is minted on profile creation and kept client-side.
+// ---------------------------------------------------------------------------
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  displayName: string;
+  cursus: Cursus;
+  interests: string[];
+  avatar: AvatarConfig;
+  xp: number;
+  streak: number;
+  friends: string[];
+  createdAt: number;
+}
+
+export interface LeaderboardEntry {
+  username: string;
+  displayName: string;
+  avatar: AvatarConfig;
+  xp: number;
 }

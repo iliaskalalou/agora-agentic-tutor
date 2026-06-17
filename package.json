@@ -17,7 +17,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.server.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "smoke": "node scripts/smoke-test.mjs"
+    "smoke": "node scripts/smoke-test.mjs",
+    "format": "prettier --write \"{server,src,shared,scripts,test}/**/*.{ts,tsx,mjs}\"",
+    "format:check": "prettier --check \"{server,src,shared,scripts,test}/**/*.{ts,tsx,mjs}\""
   },
   "dependencies": {
     "compression": "^1.7.5",
@@ -47,6 +49,7 @@
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.0",
     "postcss": "^8.4.49",
+    "prettier": "^3.3.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "supertest": "^7.0.0",

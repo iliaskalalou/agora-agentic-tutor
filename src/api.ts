@@ -2,6 +2,7 @@ import type {
   AgentEvent,
   AggregateStats,
   CreateSessionRequest,
+  CurriculumTree,
   GoalPreset,
   SessionState,
   UploadResponse,
@@ -36,6 +37,7 @@ async function jpost<T>(url: string, body: unknown): Promise<T> {
 export const api = {
   info: () => jget<RuntimeInfo>("/api/info"),
   presets: () => jget<{ presets: GoalPreset[] }>("/api/presets"),
+  curriculum: () => jget<{ curriculum: CurriculumTree }>("/api/curriculum"),
   stats: () => jget<{ stats: AggregateStats }>("/api/stats"),
   createSession: (body: CreateSessionRequest) =>
     jpost<{ session: SessionState }>("/api/sessions", body),

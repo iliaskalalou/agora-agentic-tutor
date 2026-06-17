@@ -3,7 +3,8 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { logger } from "../logger";
 import { providerName } from "../agents/llm";
-import { planLearningPath } from "../agents/planner";
+import { planLearningPath, planFromTopic } from "../agents/planner";
+import { buildCategoryTopic } from "../agents/categoryPlanner";
 import { startRun, submitAnswer } from "../agents/orchestrator";
 import { saveSession, loadSession, bumpStat } from "../store/sessionStore";
 import { replayEvents } from "../events";
@@ -19,11 +20,27 @@ const createSchema = z.object({
   interests: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
   avatar: z
     .object({
-      creature: z.enum(["fox", "owl", "robot", "cat"]),
-      color: z.string().max(16),
+      skin: z.string().max(16),
+      hair: z.enum(["short", "long", "buzz", "ponytail", "curly", "bald"]),
+      hairColor: z.string().max(16),
+      shirt: z.string().max(16),
+      pants: z.string().max(16),
+      shoes: z.string().max(16),
     })
     .optional(),
+  cursus: z.enum(["college", "lycee"]).optional(),
+  subjectId: z.string().max(40).optional(),
+  categoryId: z.string().max(60).optional(),
 });
+
+const DEFAULT_AVATAR = {
+  skin: "#f1c27d",
+  hair: "short" as const,
+  hairColor: "#1f2937",
+  shirt: "#4f46e5",
+  pants: "#334155",
+  shoes: "#f43f5e",
+};
 
 const answerSchema = z.object({
   questionId: z.string().min(1),
@@ -37,8 +54,18 @@ sessionsRouter.post("/", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid request", details: parsed.error.flatten() });
   }
-  const { goal, mode, learnerName, simulatedSkill, interests, avatar } = parsed.data;
-  const { plan, blueprint } = planLearningPath(goal);
+  const { goal, mode, learnerName, simulatedSkill, interests, avatar, cursus, subjectId, categoryId } =
+    parsed.data;
+
+  // A curriculum category practice generates its path with the LLM; otherwise we
+  // plan from the seed knowledge base.
+  const { plan, blueprint } =
+    subjectId && categoryId
+      ? planFromTopic(
+          goal,
+          await buildCategoryTopic({ cursus: cursus ?? "college", subjectId, categoryId, goal }),
+        )
+      : planLearningPath(goal);
 
   const now = Date.now();
   const session: SessionState = {
@@ -56,7 +83,8 @@ sessionsRouter.post("/", async (req, res) => {
       name: learnerName?.trim() || (mode === "autopilot" ? "Simulated learner" : "You"),
       simulatedSkill: simulatedSkill ?? 0.7,
       interests: interests ?? [],
-      avatar: avatar ?? { creature: "fox", color: "#4f46e5" },
+      avatar: avatar ?? DEFAULT_AVATAR,
+      cursus,
     },
     pendingQuestions: null,
     lastEvaluation: null,

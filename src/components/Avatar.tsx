@@ -1,65 +1,191 @@
-import type { AvatarConfig, AvatarCreature } from "../../shared/types";
+import type { AvatarConfig, HairStyle } from "../../shared/types";
 
-export const AVATAR_CREATURES: AvatarCreature[] = ["fox", "owl", "robot", "cat"];
-export const AVATAR_COLORS = ["#4f46e5", "#059669", "#d97706", "#e11d48", "#0284c7", "#7c3aed"];
+// ---------------------------------------------------------------------------
+// Option lists for the customizer UI.
+// ---------------------------------------------------------------------------
 
-// Simple, emoji-free SVG creatures drawn in white over a colored disc.
-function Features({ creature }: { creature: AvatarCreature }) {
-  switch (creature) {
-    case "fox":
+export const HAIR_STYLES: HairStyle[] = [
+  "short",
+  "long",
+  "buzz",
+  "ponytail",
+  "curly",
+  "bald",
+];
+
+// ~5 realistic skin tones, light -> deep.
+export const SKIN_TONES: string[] = [
+  "#ffe0bd",
+  "#f1c27d",
+  "#e0ac69",
+  "#c68642",
+  "#8d5524",
+];
+
+// ~6 hair colors: black, brown, blonde, red, gray, and one fun color.
+export const HAIR_COLORS: string[] = [
+  "#1f2937",
+  "#6b4423",
+  "#e0b84c",
+  "#b5562b",
+  "#9ca3af",
+  "#7c3aed",
+];
+
+// ~8 clothing colors usable for shirt / pants / shoes.
+export const CLOTHING_COLORS: string[] = [
+  "#4f46e5",
+  "#059669",
+  "#d97706",
+  "#e11d48",
+  "#0284c7",
+  "#7c3aed",
+  "#334155",
+  "#f43f5e",
+];
+
+// ---------------------------------------------------------------------------
+// Hair layer — shape depends on the chosen style, drawn over the head.
+// The head is a rounded shape centered at x=32, top of skull around y=14.
+// ---------------------------------------------------------------------------
+
+function Hair({ style, color }: { style: HairStyle; color: string }) {
+  switch (style) {
+    case "bald":
+      return null;
+
+    case "buzz":
+      // Thin cap close to the scalp.
       return (
-        <g fill="#fff">
-          <path d="M20 22l6 8-6 2z" />
-          <path d="M44 22l-6 8 6 2z" />
-          <path d="M32 24l11 8-11 14L21 32z" />
-          <circle cx="28" cy="33" r="2.2" fill={"#1f2937"} />
-          <circle cx="36" cy="33" r="2.2" fill={"#1f2937"} />
-          <circle cx="32" cy="40" r="1.8" fill={"#1f2937"} />
+        <path
+          d="M19 25 Q19 13 32 13 Q45 13 45 25 Q45 21 32 20 Q19 21 19 25 Z"
+          fill={color}
+        />
+      );
+
+    case "short":
+      // Rounded short hair covering the top, with a soft fringe.
+      return (
+        <path
+          d="M18 27 Q18 11 32 11 Q46 11 46 27 Q43 22 39 23 Q36 19 32 19 Q28 19 25 23 Q21 22 18 27 Z"
+          fill={color}
+        />
+      );
+
+    case "long":
+      // Hair framing both sides, falling down past the ears onto the shoulders.
+      return (
+        <g fill={color}>
+          <path d="M17 42 Q15 22 32 11 Q49 22 47 42 Q44 40 42 41 Q44 28 32 21 Q20 28 22 41 Q20 40 17 42 Z" />
+          <path d="M18 11 Q32 6 46 11 Q46 22 41 24 Q36 18 32 18 Q28 18 23 24 Q18 22 18 11 Z" />
         </g>
       );
-    case "owl":
+
+    case "ponytail":
+      // Short top plus a ponytail hanging on the back-right.
       return (
-        <g fill="#fff">
-          <path d="M19 20l5 6-5 1z" />
-          <path d="M45 20l-5 6 5 1z" />
-          <circle cx="26" cy="32" r="7" />
-          <circle cx="38" cy="32" r="7" />
-          <circle cx="26" cy="32" r="3" fill="#1f2937" />
-          <circle cx="38" cy="32" r="3" fill="#1f2937" />
-          <path d="M32 36l3 4h-6z" fill="#1f2937" />
+        <g fill={color}>
+          <path d="M46 26 Q49 30 47 38 Q45 44 41 45 Q45 40 44 33 Q44 30 43 28 Z" />
+          <path d="M18 27 Q18 11 32 11 Q46 11 46 27 Q43 22 39 23 Q36 19 32 19 Q28 19 25 23 Q21 22 18 27 Z" />
         </g>
       );
-    case "robot":
+
+    case "curly":
+      // Bumpy / scalloped rounded hair mass.
       return (
-        <g fill="#fff">
-          <rect x="20" y="22" width="24" height="20" rx="4" />
-          <rect x="31" y="14" width="2" height="6" />
-          <circle cx="32" cy="13" r="2.4" />
-          <circle cx="27" cy="31" r="3" fill="#1f2937" />
-          <circle cx="37" cy="31" r="3" fill="#1f2937" />
-          <rect x="27" y="37" width="10" height="2" rx="1" fill="#1f2937" />
-        </g>
-      );
-    case "cat":
-      return (
-        <g fill="#fff">
-          <path d="M21 21l4 8-7-1z" />
-          <path d="M43 21l-4 8 7-1z" />
-          <circle cx="32" cy="33" r="11" />
-          <circle cx="28" cy="32" r="2.2" fill="#1f2937" />
-          <circle cx="36" cy="32" r="2.2" fill="#1f2937" />
-          <path d="M32 36l2 2-2 1-2-1z" fill="#1f2937" />
-          <path d="M22 35h6M22 38h6M36 35h6M36 38h6" stroke="#1f2937" strokeWidth="1" />
-        </g>
+        <path
+          d="M18 26
+             a4 4 0 0 1 1 -7
+             a4.5 4.5 0 0 1 5 -5
+             a5 5 0 0 1 8 -2
+             a5 5 0 0 1 8 2
+             a4.5 4.5 0 0 1 5 5
+             a4 4 0 0 1 1 7
+             q-3 -4 -6 -3
+             q-3 -4 -8 -3
+             q-5 -1 -8 3
+             q-3 -1 -6 3 Z"
+          fill={color}
+        />
       );
   }
 }
 
-export default function Avatar({ config, size = 40 }: { config: AvatarConfig; size?: number }) {
+// ---------------------------------------------------------------------------
+// Avatar — a friendly flat-design chibi humanoid built from layered parts.
+// ---------------------------------------------------------------------------
+
+export default function Avatar({
+  config,
+  size = 48,
+}: {
+  config: AvatarConfig;
+  size?: number;
+}) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" role="img" aria-label={`${config.creature} avatar`}>
-      <circle cx="32" cy="32" r="31" fill={config.color} />
-      <Features creature={config.creature} />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 80"
+      role="img"
+      aria-label="learner avatar"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* 1. Shoes */}
+      <g fill={config.shoes}>
+        <rect x="22" y="71" width="9" height="6" rx="3" />
+        <rect x="33" y="71" width="9" height="6" rx="3" />
+      </g>
+
+      {/* 2. Pants / legs */}
+      <g fill={config.pants}>
+        <rect x="24" y="58" width="7" height="15" rx="3" />
+        <rect x="33" y="58" width="7" height="15" rx="3" />
+      </g>
+
+      {/* 3. Torso / t-shirt with short sleeves */}
+      <g fill={config.shirt}>
+        {/* sleeves */}
+        <rect x="14" y="42" width="9" height="12" rx="4" />
+        <rect x="41" y="42" width="9" height="12" rx="4" />
+        {/* body */}
+        <path d="M22 43 Q32 39 42 43 L42 60 Q32 63 22 60 Z" />
+      </g>
+
+      {/* 4. Neck + head */}
+      <rect x="29" y="36" width="6" height="7" rx="3" fill={config.skin} />
+      <rect x="20" y="14" width="24" height="26" rx="12" fill={config.skin} />
+
+      {/* 5. Face: two eyes and a small smile */}
+      <g fill="#1f2937">
+        <circle cx="27" cy="27" r="1.7" />
+        <circle cx="37" cy="27" r="1.7" />
+      </g>
+      <path
+        d="M28 32 Q32 35 36 32"
+        fill="none"
+        stroke="#1f2937"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+
+      {/* 6. Hair on top */}
+      <Hair style={config.hair} color={config.hairColor} />
     </svg>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Sensible default avatar for the customizer / new profiles.
+// ---------------------------------------------------------------------------
+
+export function randomAvatar(): AvatarConfig {
+  return {
+    skin: SKIN_TONES[0],
+    hair: "short",
+    hairColor: HAIR_COLORS[0],
+    shirt: CLOTHING_COLORS[0],
+    pants: CLOTHING_COLORS[6],
+    shoes: CLOTHING_COLORS[7],
+  };
 }

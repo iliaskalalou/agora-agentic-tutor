@@ -12,6 +12,7 @@ import { healthRouter } from "./routes/health";
 import { metaRouter } from "./routes/meta";
 import { sessionsRouter } from "./routes/sessions";
 import { uploadRouter } from "./routes/upload";
+import { communityRouter } from "./routes/community";
 import { eventsRouter } from "./routes/events";
 import { rateLimit } from "./middleware/rateLimit";
 
@@ -42,6 +43,7 @@ export async function createApp(): Promise<Express> {
   // Rate-limit the write paths that spawn autonomous compute or OCR.
   app.use("/api/sessions", rateLimit({ windowMs: 60_000, max: 40 }), sessionsRouter);
   app.use("/api/sessions", uploadRouter);
+  app.use("/api/community", rateLimit({ windowMs: 60_000, max: 60 }), communityRouter);
   app.use("/events", eventsRouter);
 
   // Serve the built front-end in production. In dev, Vite serves it on :5173.

@@ -64,7 +64,14 @@ describe("question personalization (Ollama-themed)", () => {
     name: "Alex",
     simulatedSkill: 0.7,
     interests: ["football", "space"],
-    avatar: { creature: "fox", color: "#4f46e5" },
+    avatar: {
+      skin: "#f1c27d",
+      hair: "short",
+      hairColor: "#1f2937",
+      shirt: "#4f46e5",
+      pants: "#334155",
+      shoes: "#f43f5e",
+    },
   };
   const base: Question = {
     id: "q1",

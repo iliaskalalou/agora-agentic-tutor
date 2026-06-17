@@ -31,7 +31,7 @@ export async function personalizeQuestion(
   const raw = await chat(
     SCENE_SYSTEM,
     [
-      `Avatar: ${hero}, a brave ${profile.avatar.creature}.`,
+      `Hero: ${hero}, a brave young adventurer.`,
       `The learner loves: ${interests}. Weave these interests into the scene.`,
       `Situation: ${hero} ${scenario}.`,
       `The challenge is about: ${conceptTitle}.`,
