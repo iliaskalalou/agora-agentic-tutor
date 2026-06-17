@@ -25,13 +25,9 @@ export default function MetricsPanel({ session }: { session: SessionState }) {
         <MasteryDial value={session.masteryAvg} />
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <Tile value={m.lessonsDelivered} label="lessons" tone="text-tutor" />
+      <div className="mt-3 grid grid-cols-2 gap-2">
         <Tile value={m.questionsAsked} label="exercises" tone="text-assessor" />
         <Tile value={`${accuracy}%`} label="accuracy" tone="text-brand-600" />
-        <Tile value={m.conceptsMastered} label="mastered" tone="text-tutor" />
-        <Tile value={m.remediationsInjected} label="reviews" tone="text-diagnostician" />
-        <Tile value={`${Math.round(session.masteryAvg * 100)}%`} label="overall" tone="text-slate-900" />
       </div>
     </div>
   );
