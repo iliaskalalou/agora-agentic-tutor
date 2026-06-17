@@ -1,13 +1,15 @@
 import { useState } from "react";
-import type { AvatarConfig, Cursus, HairStyle } from "../../shared/types";
+import type { AccessoryId, AvatarConfig, Cursus, HairStyle } from "../../shared/types";
 import Avatar, { HAIR_STYLES, SKIN_TONES, HAIR_COLORS, CLOTHING_COLORS, randomAvatar } from "./Avatar";
 import { cx } from "../util";
+import { ACCESSORY_UNLOCKS, getUnlockedAccessories } from "../utils/leveling";
 
 export interface Profile {
   name: string;
   cursus: Cursus;
   interests: string[];
   avatar: AvatarConfig;
+  xp: number;
 }
 
 const SUGGESTED = [
@@ -75,6 +77,7 @@ export default function ProfileSetup({
   const [cursus, setCursus] = useState<Cursus>(initial?.cursus ?? "college");
   const [avatar, setAvatar] = useState<AvatarConfig>(initial?.avatar ?? randomAvatar());
   const [interests, setInterests] = useState<string[]>(initial?.interests ?? []);
+  const unlockedAccessories = getUnlockedAccessories(initial?.xp ?? 0);
   const [custom, setCustom] = useState("");
 
   const set = (patch: Partial<AvatarConfig>) => setAvatar((a) => ({ ...a, ...patch }));
@@ -183,6 +186,52 @@ export default function ProfileSetup({
             </div>
           </div>
 
+          {/* Accessory picker */}
+          <div>
+            <div className="label mb-2">Accessoire</div>
+            <div className="flex flex-wrap gap-2">
+              {/* "Aucun" option */}
+              <button
+                onClick={() => set({ accessory: "none" as AccessoryId })}
+                className={cx(
+                  "flex flex-col items-center gap-1 rounded-lg border p-1.5 transition",
+                  (avatar.accessory ?? "none") === "none"
+                    ? "border-brand-400 bg-brand-50"
+                    : "border-slate-200 hover:bg-slate-50",
+                )}
+              >
+                <Avatar config={{ ...avatar, accessory: "none" }} size={40} />
+                <span className="text-[10px] text-slate-500">Aucun</span>
+              </button>
+
+              {ACCESSORY_UNLOCKS.map((unlock) => {
+                const isUnlocked = unlockedAccessories.includes(unlock.accessoryId);
+                return (
+                  <button
+                    key={unlock.accessoryId}
+                    disabled={!isUnlocked}
+                    onClick={() => isUnlocked && set({ accessory: unlock.accessoryId })}
+                    title={isUnlocked ? unlock.label : `Débloque au niveau ${unlock.level}`}
+                    className={cx(
+                      "flex flex-col items-center gap-1 rounded-lg border p-1.5 transition",
+                      !isUnlocked && "cursor-not-allowed opacity-40 grayscale",
+                      isUnlocked && avatar.accessory === unlock.accessoryId
+                        ? "border-brand-400 bg-brand-50"
+                        : isUnlocked
+                        ? "border-slate-200 hover:bg-slate-50"
+                        : "border-slate-200",
+                    )}
+                  >
+                    <Avatar config={{ ...avatar, accessory: isUnlocked ? unlock.accessoryId : "none" }} size={40} />
+                    <span className="text-[10px] text-slate-500">
+                      {isUnlocked ? unlock.emoji : `Niv.${unlock.level}`}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Interests */}
           <div>
             <div className="label mb-2">Tes centres d'intérêt</div>
@@ -219,7 +268,7 @@ export default function ProfileSetup({
           <button
             className="btn-primary w-full"
             disabled={!valid}
-            onClick={() => onDone({ name: name.trim(), cursus, interests, avatar })}
+            onClick={() => onDone({ name: name.trim(), cursus, interests, avatar, xp: initial?.xp ?? 0 })}
           >
             {initial ? "Enregistrer" : "Commencer"}
           </button>

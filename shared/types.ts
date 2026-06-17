@@ -116,6 +116,21 @@ export type Cursus = "college" | "lycee";
 // Customizable humanoid avatar: hair (+ color), shirt, pants, shoes, skin tone.
 export type HairStyle = "short" | "long" | "buzz" | "ponytail" | "curly" | "bald";
 
+export type AccessoryId =
+  | "none"
+  | "tophat"
+  | "sword"
+  | "crown"
+  | "graduation"
+  | "cap"
+  | "shield"
+  | "wizard"
+  | "star"
+  | "flame"
+  | "gem"
+  | "cape"
+  | "halo";
+
 export interface AvatarConfig {
   skin: string;
   hair: HairStyle;
@@ -123,6 +138,7 @@ export interface AvatarConfig {
   shirt: string;
   pants: string;
   shoes: string;
+  accessory?: AccessoryId;
 }
 
 export interface LearnerProfile {

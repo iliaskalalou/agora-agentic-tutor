@@ -1,6 +1,10 @@
 import { useState } from "react";
-import type { Cursus, CurriculumTree, GoalPreset, SessionMode } from "../../shared/types";
+import type { AvatarConfig, Cursus, CurriculumTree, GoalPreset, SessionMode } from "../../shared/types";
 import { cx } from "../util";
+import LevelingTab from "./LevelingTab";
+import { levelFromXp, ACCESSORY_UNLOCKS } from "../utils/leveling";
+
+type Tab = "matieres" | "niveaux";
 
 export default function SubjectBrowser({
   curriculum,
@@ -8,6 +12,8 @@ export default function SubjectBrowser({
   presets,
   starting,
   profileName,
+  xp = 0,
+  avatar,
   onStartCategory,
   onStartGoal,
 }: {
@@ -16,6 +22,8 @@ export default function SubjectBrowser({
   presets: GoalPreset[];
   starting: boolean;
   profileName?: string;
+  xp?: number;
+  avatar?: AvatarConfig;
   onStartCategory: (a: {
     subjectId: string;
     categoryId: string;
@@ -25,24 +33,54 @@ export default function SubjectBrowser({
   }) => void;
   onStartGoal: (goal: string, mode: SessionMode) => void;
 }) {
+  const [tab, setTab] = useState<Tab>("matieres");
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [goal, setGoal] = useState("");
   const [mode, setMode] = useState<SessionMode>("interactive");
 
   const subjects = curriculum?.[cursus] ?? [];
   const subject = subjects.find((s) => s.id === subjectId) ?? null;
+  const level = levelFromXp(xp);
+  const nextUnlock = ACCESSORY_UNLOCKS.find((u) => u.level === level + 1);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
       <div className="mb-7 text-center">
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-          {profileName ? `Salut ${profileName} !` : "Au programme"} Choisis une matière.
+          {profileName ? `Salut ${profileName} !` : "Au programme"}
+          {tab === "matieres" ? " Choisis une matière." : " Tes niveaux & récompenses."}
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-500">
-          Sélectionne une matière puis un chapitre : l'IA génère un entraînement adapté à ton niveau
-          ({cursus === "college" ? "collège" : "lycée"}) et à tes centres d'intérêt.
+          {tab === "matieres"
+            ? `Sélectionne une matière puis un chapitre : l'IA génère un entraînement adapté à ton niveau (${cursus === "college" ? "collège" : "lycée"}) et à tes centres d'intérêt.`
+            : nextUnlock
+            ? `Niveau ${level} · Encore quelques sessions pour débloquer "${nextUnlock.label}" ${nextUnlock.emoji}`
+            : `Niveau ${level} · Tu as atteint le niveau maximum !`}
         </p>
       </div>
+
+      {/* Tab bar */}
+      <div className="mb-6 flex gap-1 rounded-xl bg-slate-100 p-1">
+        {(["matieres", "niveaux"] as Tab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={cx(
+              "flex-1 rounded-lg py-2 text-sm font-semibold transition",
+              tab === t
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-700",
+            )}
+          >
+            {t === "matieres" ? "📖 Matières" : "🏆 Niveaux"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "niveaux" ? (
+        <LevelingTab xp={xp} avatar={avatar} />
+      ) : (
+        <>
 
       {!subject ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -147,6 +185,8 @@ export default function SubjectBrowser({
           </button>
         </div>
       </div>
+    </>
+  )}
     </div>
   );
 }
