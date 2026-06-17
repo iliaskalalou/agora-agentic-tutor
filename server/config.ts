@@ -11,11 +11,15 @@ const schema = z.object({
   REDIS_URL: z.string().optional(),
   SCALINGO_REDIS_URL: z.string().optional(),
 
-  LLM_PROVIDER: z.enum(["auto", "anthropic", "openai", "simulation"]).default("auto"),
+  LLM_PROVIDER: z.enum(["auto", "anthropic", "openai", "ollama", "simulation"]).default("auto"),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default("claude-opus-4-8"),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default("gpt-4o"),
+  // Local LLM via Ollama — keyless, runs on the machine. Used to generate
+  // personalized, interest-targeted question scenarios. No API key ever needed.
+  OLLAMA_BASE_URL: z.string().default("http://localhost:11434"),
+  OLLAMA_MODEL: z.string().default("llama3.2"),
 
   MAX_RUN_STEPS: z.coerce.number().int().positive().max(500).default(60),
 });
@@ -24,11 +28,12 @@ const parsed = schema.parse(process.env);
 
 const redisUrl = parsed.REDIS_URL || parsed.SCALINGO_REDIS_URL || null;
 
-function resolveProvider(): "anthropic" | "openai" | "simulation" {
+function resolveProvider(): "anthropic" | "openai" | "ollama" | "simulation" {
   if (parsed.LLM_PROVIDER === "anthropic") return "anthropic";
   if (parsed.LLM_PROVIDER === "openai") return "openai";
+  if (parsed.LLM_PROVIDER === "ollama") return "ollama";
   if (parsed.LLM_PROVIDER === "simulation") return "simulation";
-  // auto-detection
+  // auto-detection (Ollama is opt-in via LLM_PROVIDER=ollama to stay test-safe).
   if (parsed.ANTHROPIC_API_KEY) return "anthropic";
   if (parsed.OPENAI_API_KEY) return "openai";
   return "simulation";
@@ -46,6 +51,8 @@ export const config = {
     anthropicModel: parsed.ANTHROPIC_MODEL,
     openaiKey: parsed.OPENAI_API_KEY,
     openaiModel: parsed.OPENAI_MODEL,
+    ollamaBaseUrl: parsed.OLLAMA_BASE_URL,
+    ollamaModel: parsed.OLLAMA_MODEL,
   },
   maxRunSteps: parsed.MAX_RUN_STEPS,
 } as const;

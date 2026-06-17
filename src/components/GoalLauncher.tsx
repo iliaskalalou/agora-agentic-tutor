@@ -10,12 +10,14 @@ export default function GoalLauncher({
   info,
   stats,
   starting,
+  profileName,
   onStart,
 }: {
   presets: GoalPreset[];
   info: RuntimeInfo | null;
   stats: AggregateStats | null;
   starting: boolean;
+  profileName?: string;
   onStart: (req: CreateSessionRequest) => void;
 }) {
   const [goal, setGoal] = useState("");
@@ -33,7 +35,7 @@ export default function GoalLauncher({
       <div className="mb-9 text-center">
         <span className="chip mx-auto mb-4 border border-slate-200 bg-white text-slate-500 shadow-card">
           <span className="h-1.5 w-1.5 rounded-full bg-tutor" />
-          Adaptive tutoring across subjects
+          {profileName ? `Hi ${profileName} — ready to practice?` : "Adaptive tutoring across subjects"}
         </span>
         <h1 className="text-balance text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
           Practice any subject.

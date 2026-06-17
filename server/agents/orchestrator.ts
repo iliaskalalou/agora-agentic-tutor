@@ -10,7 +10,9 @@ import { teach } from "./tutor";
 import { makeQuestion, toPublicQuestion } from "./assessor";
 import { evaluate } from "./diagnostician";
 import { answerAs } from "./learner";
-import { getUsage } from "./llm";
+import { getUsage, isLive } from "./llm";
+import { personalizeQuestion } from "./questionGen";
+import { scenarioFor } from "../domain/scenarios";
 
 // ---------------------------------------------------------------------------
 // The Orchestrator is the autonomous core. Given a goal it drives the full
@@ -110,7 +112,21 @@ async function assessStep(session: SessionState, bp: Blueprint): Promise<Questio
   const kb = findKb(bp, id)!;
   const pub = findPub(session, id)!;
 
-  const question = makeQuestion(kb, pub.attempts);
+  const baseQuestion = makeQuestion(kb, pub.attempts);
+  let question = baseQuestion;
+
+  // With a live LLM, personalize the exercise as an avatar-themed scene targeted
+  // to the learner's interests. Answer choices stay anchored to the verified KB.
+  if (isLive()) {
+    await emitEvent({
+      sessionId: session.id,
+      agent: "assessor",
+      type: "thinking",
+      title: `Crafting a personalized challenge for ${session.learner.name}`,
+    });
+    question = await personalizeQuestion(baseQuestion, kb.title, session.learner, scenarioFor(bp.topicId));
+  }
+
   pub.status = "assessing";
 
   await getStore().setJSON(keys.grading(session.id), [question], 60 * 60 * 6);

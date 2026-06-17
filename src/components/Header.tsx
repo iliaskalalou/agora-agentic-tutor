@@ -2,18 +2,24 @@ import type { SessionState } from "../../shared/types";
 import type { RuntimeInfo } from "../api";
 import { cx } from "../util";
 import Logo from "./Logo";
+import Avatar from "./Avatar";
+import type { Profile } from "./ProfileSetup";
 
 export default function Header({
   info,
   session,
+  profile,
   advanced,
   onToggleAdvanced,
+  onEditProfile,
   onRestart,
 }: {
   info: RuntimeInfo | null;
   session?: SessionState | null;
+  profile?: Profile | null;
   advanced: boolean;
   onToggleAdvanced: () => void;
+  onEditProfile?: () => void;
   onRestart?: () => void;
 }) {
   return (
@@ -55,6 +61,17 @@ export default function Header({
         {session && onRestart && (
           <button className="btn-ghost !px-3 !py-1.5 text-xs" onClick={onRestart}>
             New session
+          </button>
+        )}
+
+        {profile && (
+          <button
+            onClick={onEditProfile}
+            className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 transition hover:bg-slate-50"
+            title="Edit your profile"
+          >
+            <Avatar config={profile.avatar} size={28} />
+            <span className="text-sm font-semibold text-slate-700">{profile.name}</span>
           </button>
         )}
       </div>

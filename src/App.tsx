@@ -11,18 +11,32 @@ import { api, streamSession, type RuntimeInfo } from "./api";
 import Header from "./components/Header";
 import GoalLauncher from "./components/GoalLauncher";
 import ControlRoom from "./components/ControlRoom";
+import ProfileSetup, { type Profile } from "./components/ProfileSetup";
+
+const PROFILE_KEY = "agora.profile.v1";
+
+function loadProfile(): Profile | null {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    return raw ? (JSON.parse(raw) as Profile) : null;
+  } catch {
+    return null;
+  }
+}
 
 export default function App() {
   const [info, setInfo] = useState<RuntimeInfo | null>(null);
   const [presets, setPresets] = useState<GoalPreset[]>([]);
   const [stats, setStats] = useState<AggregateStats | null>(null);
 
+  const [profile, setProfile] = useState<Profile | null>(() => loadProfile());
+  const [editingProfile, setEditingProfile] = useState(false);
+
   const [session, setSession] = useState<SessionState | null>(null);
   const [events, setEvents] = useState<AgentEvent[]>([]);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [starting, setStarting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  // Default to the clean student view; "Coach view" reveals the AI agents.
   const [advanced, setAdvanced] = useState(false);
 
   const refreshStats = useCallback(() => {
@@ -35,7 +49,6 @@ export default function App() {
     refreshStats();
   }, [refreshStats]);
 
-  // Subscribe to the live event stream whenever we have an active session.
   useEffect(() => {
     if (!session?.id) return;
     const close = streamSession(session.id, (e) => {
@@ -49,24 +62,39 @@ export default function App() {
       if (e.type === "run.complete") refreshStats();
     });
     return close;
-    // Re-subscribe only when the session identity changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id]);
 
-  const handleStart = useCallback(async (req: CreateSessionRequest) => {
-    setStarting(true);
+  const saveProfile = useCallback((p: Profile) => {
     try {
-      const { session: created } = await api.createSession(req);
-      setEvents([]);
-      setLesson(null);
-      setSession(created);
-    } catch (err) {
-      console.error(err);
-      alert("Could not start the session. Is the server running?");
-    } finally {
-      setStarting(false);
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+    } catch {
+      /* ignore storage errors */
     }
+    setProfile(p);
+    setEditingProfile(false);
   }, []);
+
+  const handleStart = useCallback(
+    async (req: CreateSessionRequest) => {
+      setStarting(true);
+      try {
+        const enriched: CreateSessionRequest = profile
+          ? { ...req, learnerName: profile.name, interests: profile.interests, avatar: profile.avatar }
+          : req;
+        const { session: created } = await api.createSession(enriched);
+        setEvents([]);
+        setLesson(null);
+        setSession(created);
+      } catch (err) {
+        console.error(err);
+        alert("Could not start the session. Is the server running?");
+      } finally {
+        setStarting(false);
+      }
+    },
+    [profile],
+  );
 
   const handleAnswer = useCallback(
     async (questionId: string, answer: number | string) => {
@@ -90,13 +118,20 @@ export default function App() {
     refreshStats();
   }, [refreshStats]);
 
+  // Onboarding / profile editing takes over the whole screen.
+  if (!profile || editingProfile) {
+    return <ProfileSetup initial={profile} onDone={saveProfile} />;
+  }
+
   return (
     <div className="min-h-full">
       <Header
         info={info}
         session={session}
+        profile={profile}
         advanced={advanced}
         onToggleAdvanced={() => setAdvanced((v) => !v)}
+        onEditProfile={() => setEditingProfile(true)}
         onRestart={session ? handleRestart : undefined}
       />
       {session ? (
@@ -110,7 +145,14 @@ export default function App() {
           onRestart={handleRestart}
         />
       ) : (
-        <GoalLauncher presets={presets} info={info} stats={stats} starting={starting} onStart={handleStart} />
+        <GoalLauncher
+          presets={presets}
+          info={info}
+          stats={stats}
+          starting={starting}
+          profileName={profile.name}
+          onStart={handleStart}
+        />
       )}
     </div>
   );

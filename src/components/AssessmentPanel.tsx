@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { SessionState } from "../../shared/types";
 import { AGENT_META } from "../agents";
 import { cx } from "../util";
+import Avatar from "./Avatar";
 
 export default function AssessmentPanel({
   session,
@@ -21,13 +22,14 @@ export default function AssessmentPanel({
   return (
     <div className="panel panel-pad">
       <div className="mb-3 flex items-center gap-2">
+        {session.learner.avatar && <Avatar config={session.learner.avatar} size={22} />}
         <span className="label">Exercise</span>
         {awaiting && <span className="chip ml-auto bg-assessor/10 text-assessor !py-0.5 text-[10px]">your turn</span>}
       </div>
 
       {question ? (
         <div className="animate-slide-in">
-          <p className="text-sm font-semibold text-slate-800">{question.prompt}</p>
+          <p className="whitespace-pre-line text-sm font-semibold text-slate-800">{question.prompt}</p>
 
           {question.type === "mcq" && question.choices && (
             <div className="mt-3 grid gap-2">

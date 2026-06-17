@@ -110,10 +110,21 @@ export type SessionStatus =
 
 export type SessionMode = "autopilot" | "interactive";
 
+export type AvatarCreature = "fox" | "owl" | "robot" | "cat";
+
+export interface AvatarConfig {
+  creature: AvatarCreature;
+  color: string;
+}
+
 export interface LearnerProfile {
   name: string;
   /** Simulated baseline competence in [0, 1] used by the autopilot learner. */
   simulatedSkill: number;
+  /** Free-text interests used to personalize generated question scenarios. */
+  interests: string[];
+  /** The customized avatar that follows the learner across the app. */
+  avatar: AvatarConfig;
 }
 
 export interface RunMetrics {
@@ -201,6 +212,8 @@ export interface CreateSessionRequest {
   mode?: SessionMode;
   learnerName?: string;
   simulatedSkill?: number;
+  interests?: string[];
+  avatar?: AvatarConfig;
 }
 
 export interface CreateSessionResponse {

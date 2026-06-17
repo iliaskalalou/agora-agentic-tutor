@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { selectTopic } from "../server/domain/curriculum";
 import { EXTRA_TOPICS } from "../server/domain/exercises_extra";
 import { reviewDocument } from "../server/agents/reviewer";
+import { personalizeQuestion } from "../server/agents/questionGen";
+import type { LearnerProfile, Question } from "../shared/types";
 
 describe("expanded exercise bank", () => {
   it("adds six new subject areas", () => {
@@ -54,5 +56,31 @@ describe("document reviewer (OCR correction)", () => {
     expect(review.ocrOk).toBe(true);
     expect(review.extractedText.length).toBeGreaterThan(0);
     expect(review.strengths.length + review.corrections.length).toBeGreaterThan(0);
+  });
+});
+
+describe("question personalization (Ollama-themed)", () => {
+  const profile: LearnerProfile = {
+    name: "Alex",
+    simulatedSkill: 0.7,
+    interests: ["football", "space"],
+    avatar: { creature: "fox", color: "#4f46e5" },
+  };
+  const base: Question = {
+    id: "q1",
+    conceptId: "c1",
+    type: "mcq",
+    prompt: "What is 1/2 + 1/3?",
+    choices: ["2/5", "5/6", "1/5", "2/6"],
+    correctIndex: 1,
+    difficulty: "core",
+  };
+
+  it("returns the verified question unchanged when no LLM is configured", async () => {
+    // In tests the provider is 'simulation', so chat() returns null -> base.
+    const out = await personalizeQuestion(base, "Adding fractions", profile, "is locked before a gate");
+    expect(out.prompt).toBe(base.prompt);
+    expect(out.correctIndex).toBe(1);
+    expect(out.choices).toEqual(base.choices);
   });
 });

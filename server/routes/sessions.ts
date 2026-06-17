@@ -16,6 +16,13 @@ const createSchema = z.object({
   mode: z.enum(["autopilot", "interactive"]).default("autopilot"),
   learnerName: z.string().trim().max(40).optional(),
   simulatedSkill: z.coerce.number().min(0).max(1).optional(),
+  interests: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
+  avatar: z
+    .object({
+      creature: z.enum(["fox", "owl", "robot", "cat"]),
+      color: z.string().max(16),
+    })
+    .optional(),
 });
 
 const answerSchema = z.object({
@@ -30,7 +37,7 @@ sessionsRouter.post("/", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid request", details: parsed.error.flatten() });
   }
-  const { goal, mode, learnerName, simulatedSkill } = parsed.data;
+  const { goal, mode, learnerName, simulatedSkill, interests, avatar } = parsed.data;
   const { plan, blueprint } = planLearningPath(goal);
 
   const now = Date.now();
@@ -48,6 +55,8 @@ sessionsRouter.post("/", async (req, res) => {
     learner: {
       name: learnerName?.trim() || (mode === "autopilot" ? "Simulated learner" : "You"),
       simulatedSkill: simulatedSkill ?? 0.7,
+      interests: interests ?? [],
+      avatar: avatar ?? { creature: "fox", color: "#4f46e5" },
     },
     pendingQuestions: null,
     lastEvaluation: null,

@@ -30,7 +30,7 @@ export function isLive(): boolean {
   return config.llm.provider !== "simulation";
 }
 
-const TIMEOUT_MS = 20_000;
+const TIMEOUT_MS = 45_000; // generous: a local Ollama model can be slow to warm up
 
 async function withTimeout(p: (signal: AbortSignal) => Promise<Response>): Promise<Response> {
   const ctrl = new AbortController();
@@ -100,6 +100,39 @@ async function openaiChat(system: string, prompt: string, maxTokens: number): Pr
   return { text, tokensApprox: used, provider: "openai" };
 }
 
+// Local, keyless LLM via Ollama. No API key is ever required or stored.
+async function ollamaChat(system: string, prompt: string, maxTokens: number): Promise<RawCompletion> {
+  const res = await withTimeout((signal) =>
+    fetch(`${config.llm.ollamaBaseUrl}/api/chat`, {
+      method: "POST",
+      signal,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: config.llm.ollamaModel,
+        stream: false,
+        options: { temperature: 0.85, num_predict: maxTokens },
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: prompt },
+        ],
+      }),
+    }),
+  );
+  if (!res.ok) throw new Error(`ollama ${res.status}: ${await res.text()}`);
+  const json = (await res.json()) as {
+    message?: { content: string };
+    prompt_eval_count?: number;
+    eval_count?: number;
+  };
+  const text = json.message?.content ?? "";
+  const used = (json.prompt_eval_count ?? 0) + (json.eval_count ?? 0);
+  return {
+    text,
+    tokensApprox: used || Math.ceil((system.length + prompt.length + text.length) / 4),
+    provider: "ollama",
+  };
+}
+
 /**
  * Returns a completion, or null when running in simulation mode (so the caller
  * uses its deterministic generator). Any provider error also resolves to null:
@@ -112,7 +145,9 @@ export async function chat(system: string, prompt: string, maxTokens = 900): Pro
     const result =
       provider === "anthropic"
         ? await anthropicChat(system, prompt, maxTokens)
-        : await openaiChat(system, prompt, maxTokens);
+        : provider === "ollama"
+          ? await ollamaChat(system, prompt, maxTokens)
+          : await openaiChat(system, prompt, maxTokens);
     llmCalls += 1;
     tokensApprox += result.tokensApprox;
     return result;
